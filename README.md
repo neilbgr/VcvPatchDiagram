@@ -12,6 +12,13 @@ It comes as:
 
 All three share one C# library, so they always draw the same diagram.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/overview-dark.png">
+  <img alt="Folded overview of a patch: performance, sequencing, two voices and the mix bus, linked by typed cables" src="docs/screenshots/overview-light.png">
+</picture>
+
+*A 22-module patch, folded into its main blocks: who plays it, what sequences it, the two voices and the mix bus.*
+
 ## What the diagram shows
 
 Here is the folded overview of a small ambient patch, exported to Mermaid (GitHub renders it):
@@ -99,9 +106,16 @@ A complex patch gives a complex diagram, which defeats the purpose. So the first
 
 - each **voice** is one box (`PULSE ← Host MIDI`, with its chain `VCF #1 → Waveshaper → EQ · +4 mod`); identical voices merge (`LVCO ×3`);
 - a modulator whose cables all go to one voice is folded into that voice;
-- shared modulators, time, external control and the mix bus are one box each.
+- shared modulators, time, performance and the mix bus are one box each.
 
 Click a box (web app) to unfold it into its modules, in a lane of its own. The CLI does the same with `--unfold`.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/unfolded-dark.png">
+  <img alt="The same patch unfolded: every module in its band, one lane per voice" src="docs/screenshots/unfolded-light.png">
+</picture>
+
+*The same patch, everything unfolded: one lane per voice, signal flowing left to right.*
 
 ### What the analysis recognizes
 
@@ -110,9 +124,15 @@ Click a box (web app) to unfold it into its modules, in a lane of its own. The C
 - **Inserts and send/returns**: an effect patched into a module's insert or aux send and returning into it is drawn stacked under its host, with a side loop.
 - **Expanders**: an expander docked to its base (Venom mix expanders, MindMeld AuxSpander…) is part of it. Its cables attach to the base, ports prefixed with its name (`Mix Pan › Pan CV 2`).
 - **Feedback loops**: cross-modulation and feedback are drawn turning back to their target, tagged `↺ feedback`, and hinted on folded boxes.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/feedback-dark.png">
+  <img alt="Two voices with cross-modulation: the feedback cables run back under the voice to their target" src="docs/screenshots/feedback-light.png">
+</picture>
+
 - **Surge XT modulation**: Surge XT modules have "Modulation Signal n" inputs that can be assigned to any knob. The tool reads which knob each input moves and by how much (`Mod 1 → Cutoff +35%`), or reports when an input moves nothing.
 - **Scopes and displays** never get a box (they explain nothing about the sound). With "scopes & displays" on, they show as a 👁 badge on the box they watch.
-- **Contextual roles**: a keyboard-zone module fed by Host MIDI is external control, but becomes a pitch/control utility when fed by the patch itself; a "visual" module with outputs is a controller.
+- **Contextual roles**: controls played live (on-screen pads, joysticks, keyboard zones) belong to performance when played with the mouse or fed by Host MIDI, but become pitch/time/control utilities when another module of the patch drives them; a "visual" module with outputs is a controller.
 
 ### Intents
 
@@ -160,10 +180,15 @@ make web
 Open http://localhost:5016 and drop a `.vcv` file (or add `?sample=AmbientJam` to the URL for the bundled sample). From there:
 
 - unfold/fold boxes, or use **Overview** / **Unfold all**;
-- step through the layers, toggle "scopes & displays";
+- step through the layers, toggle "scopes & displays" (offered when the patch has some);
 - drag the background to pan, Ctrl + wheel to zoom;
 - hover a box to follow its cables, click a cable to edit its intent;
 - export `.html`, `.svg`, `.dot`, `.mmd` or `.json`.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/web-app-dark.png">
+  <img alt="The web app: drop zone, view, layer, export and zoom controls above the diagram" src="docs/screenshots/web-app-light.png">
+</picture>
 
 `make publish-web` builds a static site in `publish/web/wwwroot`, which any static file server can host (no backend needed).
 
@@ -225,6 +250,7 @@ catalog/                    port catalog and roles
 
 - Tests: `make test`. Exporter output is pinned by golden files in `tests/golden`: after an intended change, regenerate them with `UPDATE_GOLDEN=1 dotnet test` and review the diff.
 - Style: `make format` (`dotnet format`, rules in `.editorconfig`; explicit types, no `var`).
+- Screenshots (`docs/screenshots`, light and dark): rendered pages captured with a headless browser, e.g. `msedge --headless=new --blink-settings=preferredColorScheme=1 --window-size=W,H --screenshot=out.png page.html` (`=0` for dark).
 - Contributions welcome, especially entries for `catalog/roles.json` and `catalog/ports.overrides.json` for the modules you use.
 
 ## License

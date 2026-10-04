@@ -1,0 +1,172 @@
+﻿@using System.Globalization
+@using VcvPatchDiagram.Core.Render
+@implements IDisposable
+@inject IJSRuntime JS
+
+@* Renders a DiagramLayout as native SVG so folding, hover and cable selection are handled in C#.
+   Same classes as SvgRenderer, so diagram.css styles both identically. *@
+
+<div class="@RootClass">
+    <div class="vpd-toolbar">
+        <div class="group">Zoom:
+            <button title="Zoom out (or Ctrl + wheel)" @onclick="() => SetZoom(zoom / 1.15)">−</button>
+            <span class="vpd-zoom-label">@((int)Math.Round(zoom * 100))%</span>
+            <button title="Zoom in (or Ctrl + wheel)" @onclick="() => SetZoom(zoom * 1.15)">+</button>
+            <button @onclick="() => SetZoom(1)">100%</button>
+            <button title="Fit the width, without going below a readable size" @onclick="FitAsync">Fit</button>
+        </div>
+        <div class="group vpd-sub">Drag the background to move around.</div>
+    </div>
+    <div class="vpd-scroll" @ref="scroller">
+        <svg class="vpd-svg" viewBox="0 0 @F(Layout.Width) @F(Layout.Height)" width="@F(Layout.Width * zoom)" height="@F(Layout.Height * zoom)">
+            <defs>
+                @foreach (SignalType signal in Enum.GetValues<SignalType>())
+                {
+                    string key = SvgRenderer.SignalClass(signal);
+                    <marker id="vpd-arrow-@key" viewBox="0 0 10 10" refX="0" refY="5" markerUnits="userSpaceOnUse" markerWidth="@LayeredLayout.ArrowLength" markerHeight="@LayeredLayout.ArrowLength" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" class="vpd-marker-@key" />
+                    </marker>
+                }
+            </defs>
+
+            <g class="vpd-bands">
+                @foreach (DiagramBand band in Layout.Bands)
+                {
+                    <g class="@SvgRenderer.BandClass(band)" @onclick="() => OnBandClicked.InvokeAsync(band)">
+                        @if (band.Group is not null)
+                        {
+                            <title>Click to fold this group back</title>
+                        }
+                        <rect x="8" y="@F(band.Y)" width="@F(Layout.Width - 16)" height="@F(band.Height)" rx="8" />
+                        @Text(20, band.Y + 19, null, band.Group is null ? band.Title : $"{band.Title}  ⊟")
+                    </g>
+                }
+            </g>
+
+            <g class="vpd-edges">
+                @foreach (DiagramEdge edge in Layout.Edges)
+                {
+                    string key = SvgRenderer.SignalClass(edge.Signal);
+                    <g class="@SvgRenderer.EdgeClass(edge) @EdgeState(edge)" @onclick="() => OnEdgeSelected.InvokeAsync(edge)">
+                        <title>@SvgRenderer.EdgeTooltip(edge)</title>
+                        <path class="hit" d="@edge.Path" />
+                        <path d="@edge.Path" marker-end="url(#vpd-arrow-@key)" />
+                        @if (edge.Intent.Length > 0)
+                        {
+                            @Text(edge.LabelX, SvgRenderer.IntentY(edge), "label", edge.Intent, "middle")
+                        }
+                        @if (edge.IsFeedback)
+                        {
+                            @Text(edge.LabelX, edge.LabelY + SvgRenderer.FeedbackTagOffset, "feedback-tag", SvgRenderer.FeedbackTag, "middle")
+                        }
+                    </g>
+                }
+            </g>
+
+            <g class="vpd-nodes">
+                @foreach (DiagramNode node in Layout.Nodes)
+                {
+                    <g class="@SvgRenderer.NodeClass(node) @(highlighted.Contains(node.Key) ? "hl" : "")"
+                       @onmouseenter="() => Highlight(node.Key)" @onmouseleave="() => Highlight(null)"
+                       @onclick="() => OnNodeClicked.InvokeAsync(node)">
+                        <title>@string.Join("\n", node.Details)@(node.IsFolded ? "\n\nClick to unfold" : "")</title>
+                        @if (node.IsFolded)
+                        {
+                            <rect class="stack" x="@F(node.X + 4)" y="@F(node.Y + 4)" width="@F(node.Width)" height="@F(node.Height)" rx="6" />
+                        }
+                        <rect class="box" x="@F(node.X)" y="@F(node.Y)" width="@F(node.Width)" height="@F(node.Height)" rx="6" />
+                        <rect class="stripe" x="@F(node.X)" y="@F(node.Y)" width="5" height="@F(node.Height)" rx="2" />
+                        @Text(node.X + 14, node.Y + 20, "title", SvgRenderer.Fit(node.Title, 21))
+                        @Text(node.X + 14, node.Y + 36, "subtitle", SvgRenderer.Fit(SvgRenderer.NodeSubtitle(node), 30))
+                        @if (node.Watchers.Count > 0)
+                        {
+                            <g class="watch">
+                                <title>@SvgRenderer.WatchTooltip(node)</title>
+                                <circle cx="@F(node.X + node.Width - 2)" cy="@F(node.Y + 2)" r="10" />
+                                @Text(node.X + node.Width - 2, node.Y + 6, null, "👁", "middle")
+                            </g>
+                        }
+                    </g>
+                }
+            </g>
+        </svg>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DiagramLayout Layout { get; set; } = default!;
+
+    [Parameter] public IReadOnlySet<string> HiddenLayers { get; set; } = new HashSet<string>();
+
+    [Parameter] public bool ShowIntents { get; set; }
+
+    [Parameter] public string? SelectedEdge { get; set; }
+
+    [Parameter] public EventCallback<DiagramEdge> OnEdgeSelected { get; set; }
+
+    [Parameter] public EventCallback<DiagramNode> OnNodeClicked { get; set; }
+
+    [Parameter] public EventCallback<DiagramBand> OnBandClicked { get; set; }
+
+    private ElementReference scroller;
+    private DotNetObjectReference<PatchDiagramView>? selfReference;
+    private double zoom = 1;
+    private HashSet<string> highlighted = new HashSet<string>();
+    private HashSet<string> highlightedEdges = new HashSet<string>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            selfReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("vpdPanZoomDotNet", scroller, selfReference);
+        }
+    }
+
+    /// <summary>Ctrl + wheel, called from panzoom.js.</summary>
+    [JSInvokable]
+    public void ZoomBy(double factor)
+    {
+        SetZoom(zoom * factor);
+        StateHasChanged();
+    }
+
+    private void SetZoom(double value) => zoom = Math.Clamp(value, Resources.MinZoom, Resources.MaxZoom);
+
+    private async Task FitAsync() =>
+        SetZoom(await JS.InvokeAsync<double>("vpdFitZoom", scroller, Layout.Width, Resources.MinZoom, Resources.MaxZoom));
+
+    public void Dispose() => selfReference?.Dispose();
+
+    private string RootClass =>
+        string.Join(" ", new[] { "vpd-root", "interactive" }
+            .Concat(HiddenLayers.Select(l => $"hide-{l}"))
+            .Append(ShowIntents ? "show-intents" : "")
+            .Append(highlighted.Count > 0 ? "focus" : ""));
+
+    private string EdgeState(DiagramEdge edge) =>
+        (highlightedEdges.Contains(edge.Key) ? "hl " : "") + (edge.Key == SelectedEdge ? "selected hl" : "");
+
+    private void Highlight(string? nodeKey)
+    {
+        if (nodeKey is null)
+        {
+            highlighted = new HashSet<string>();
+            highlightedEdges = new HashSet<string>();
+            return;
+        }
+        List<DiagramEdge> edges = Layout.Edges.Where(e => e.From == nodeKey || e.To == nodeKey).ToList();
+        highlightedEdges = edges.Select(e => e.Key).ToHashSet();
+        highlighted = edges.SelectMany(e => new[] { e.From, e.To }).Append(nodeKey).ToHashSet();
+    }
+
+    /// <summary>SVG &lt;text&gt; is a reserved tag in Razor, so text elements are emitted as escaped markup.</summary>
+    private static MarkupString Text(double x, double y, string? cssClass, string content, string? anchor = null)
+    {
+        string cls = cssClass is null ? "" : $" class=\"{cssClass}\"";
+        string anchorAttr = anchor is null ? "" : $" text-anchor=\"{anchor}\"";
+        return new MarkupString($"<text{cls} x=\"{F(x)}\" y=\"{F(y)}\"{anchorAttr}>{System.Net.WebUtility.HtmlEncode(content)}</text>");
+    }
+
+    private static string F(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+}

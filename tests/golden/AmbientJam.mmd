@@ -1,0 +1,104 @@
+flowchart LR
+  subgraph b0["External control (MIDI, host)"]
+    n_m2["Host MIDI<br/>Cardinal"]:::io
+    n_m6218505374262194["Host MIDI CC<br/>Cardinal"]:::io
+    n_m3225582266994716["Host MIDI Gate<br/>Cardinal"]:::io
+  end
+  subgraph b1["Time & sequencing"]
+    n_m1647006434782107["Clkd<br/>ImpromptuModular"]:::time
+    n_m5442970283678664["ADDR-SEQ<br/>Bogaudio + ASX"]:::time
+  end
+  subgraph b2["Voice 1: LVCO ← ADDR-SEQ"]
+    n_m8599156609620611["ADSR #3<br/>Bogaudio"]:::controller
+    n_m2846238014348274["Quantizer<br/>Fundamental"]:::pitch
+    n_m7521774204900965["LVCO<br/>Bogaudio"]:::source
+    n_m7411897278716254["VCF #2<br/>SurgeXTRack"]:::modifier
+  end
+  subgraph b3["Voice 2: PULSE ← Host MIDI"]
+    n_m3898654702126135["SLEW<br/>Bogaudio"]:::controller
+    n_m5152299461796515["LLFO<br/>Bogaudio"]:::controller
+    n_m4235470771947441["PULSE<br/>Bogaudio"]:::source
+    n_m2208446996781428["ADSR #1<br/>Fundamental"]:::controller
+    n_m6726411345220971["ADSR #2<br/>Fundamental"]:::controller
+    n_m6452162562716294["VCF #1<br/>SurgeXTRack"]:::modifier
+    n_m8188053117264690["Waveshaper<br/>SurgeXTRack"]:::modifier
+    n_m4817828098405391["EQ<br/>Bogaudio"]:::modifier
+  end
+  subgraph b4["Mix & effects"]
+    n_m2629565538426473["Random<br/>Fundamental"]:::controller
+    n_m1105006806367356["MIX4<br/>Bogaudio"]:::mixer
+    n_m3951164105101658["Plateau<br/>Valley"]:::effect
+    n_m2112618335105631["Delay Plus Stereo Fx<br/>AS"]:::effect
+    n_m1["Audio 2<br/>Cardinal"]:::io
+  end
+  n_m8599156609620611 -->|"ADSR moves pre-filter gain & frequency"| n_m7411897278716254
+  n_m7521774204900965 ==>|"audio"| n_m7411897278716254
+  n_m7411897278716254 ==>|"into MIX4"| n_m1105006806367356
+  n_m2 -.->|"2 × gate / trig / clock"| n_m2208446996781428
+  n_m2 -.->|"2 × gate / trig / clock"| n_m6726411345220971
+  n_m6726411345220971 -->|"ADSR moves frequency"| n_m6452162562716294
+  n_m2 -->|"hand control of signal"| n_m3898654702126135
+  n_m5152299461796515 -->|"LLFO moves pulse width cv"| n_m4235470771947441
+  n_m6452162562716294 ==>|"audio"| n_m8188053117264690
+  n_m6726411345220971 -->|"ADSR moves drive"| n_m8188053117264690
+  n_m3898654702126135 -->|"SLEW moves gain & frequency"| n_m6452162562716294
+  n_m4235470771947441 ==>|"audio"| n_m6452162562716294
+  n_m2208446996781428 -->|"ADSR moves pre-filter gain"| n_m6452162562716294
+  n_m3898654702126135 -->|"SLEW moves drive"| n_m8188053117264690
+  n_m5442970283678664 -->|"plays the notes"| n_m2846238014348274
+  n_m1647006434782107 -.->|"sets the tempo"| n_m5442970283678664
+  n_m2846238014348274 -->|"plays the notes"| n_m7521774204900965
+  n_m1647006434782107 -.->|"fires the envelope / new value"| n_m8599156609620611
+  n_m6218505374262194 -->|"hand control of frequency & pre-filter gain"| n_m7411897278716254
+  n_m1647006434782107 -.->|"fires the envelope / new value"| n_m2629565538426473
+  n_m2629565538426473 -->|"Random moves channel 2 pan cv"| n_m1105006806367356
+  n_m3225582266994716 -.->|"2 × gate / trig / clock"| n_m1647006434782107
+  n_m1105006806367356 ==>|"2 × audio"| n_m3951164105101658
+  n_m3951164105101658 ==>|"2 × audio"| n_m2112618335105631
+  n_m2112618335105631 ==>|"2 × audio"| n_m1
+  n_m6218505374262194 -->|"hand control of frequency"| n_m6452162562716294
+  n_m2 -->|"plays the notes"| n_m4235470771947441
+  n_m2 -->|"2 × pitch"| n_m6726411345220971
+  n_m3225582266994716 -.->|"restarts"| n_m5442970283678664
+  n_m8188053117264690 ==>|"audio"| n_m4817828098405391
+  n_m4817828098405391 ==>|"into MIX4"| n_m1105006806367356
+  linkStyle 0 stroke:#2c9457
+  linkStyle 1 stroke:#d64545
+  linkStyle 2 stroke:#d64545
+  linkStyle 3 stroke:#2f74c4
+  linkStyle 4 stroke:#2f74c4
+  linkStyle 5 stroke:#2c9457
+  linkStyle 6 stroke:#2c9457
+  linkStyle 7 stroke:#2c9457
+  linkStyle 8 stroke:#d64545
+  linkStyle 9 stroke:#2c9457
+  linkStyle 10 stroke:#2c9457
+  linkStyle 11 stroke:#d64545
+  linkStyle 12 stroke:#2c9457
+  linkStyle 13 stroke:#2c9457
+  linkStyle 14 stroke:#b97d00
+  linkStyle 15 stroke:#2f74c4
+  linkStyle 16 stroke:#b97d00
+  linkStyle 17 stroke:#2f74c4
+  linkStyle 18 stroke:#2c9457
+  linkStyle 19 stroke:#2f74c4
+  linkStyle 20 stroke:#2c9457
+  linkStyle 21 stroke:#2f74c4
+  linkStyle 22 stroke:#d64545
+  linkStyle 23 stroke:#d64545
+  linkStyle 24 stroke:#d64545
+  linkStyle 25 stroke:#2c9457
+  linkStyle 26 stroke:#b97d00
+  linkStyle 27 stroke:#b97d00
+  linkStyle 28 stroke:#2f74c4
+  linkStyle 29 stroke:#d64545
+  linkStyle 30 stroke:#d64545
+  classDef time stroke:#2f74c4,stroke-width:2px
+  classDef pitch stroke:#b97d00,stroke-width:2px
+  classDef controller stroke:#2c9457,stroke-width:2px
+  classDef source stroke:#d64545,stroke-width:2px
+  classDef modifier stroke:#c2611f,stroke-width:2px
+  classDef mixer stroke:#7a52b3,stroke-width:2px
+  classDef effect stroke:#b0479a,stroke-width:2px
+  classDef io stroke:#6b6b70,stroke-width:2px
+  classDef monitor stroke:#9a958a,stroke-width:1px,stroke-dasharray:2 3

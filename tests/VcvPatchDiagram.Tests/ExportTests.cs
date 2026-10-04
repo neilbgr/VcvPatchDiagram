@@ -1,0 +1,220 @@
+﻿using VcvPatchDiagram.Core;
+using VcvPatchDiagram.Core.Analysis;
+using VcvPatchDiagram.Core.Layout;
+
+namespace VcvPatchDiagram.Tests;
+
+/// <summary>
+/// Golden files in tests/golden. After an intended change, regenerate them with
+/// UPDATE_GOLDEN=1 dotnet test, then review the diff before keeping it.
+/// </summary>
+public class ExportTests
+{
+    private static readonly PatchAnalysis analysis = Fixtures.AmbientJam;
+    private static readonly DiagramLayout layout = PatchDiagram.Layout(analysis, "Ambient Jam", PatchDiagram.GroupKeys(analysis));
+    private static readonly DiagramLayout overview = PatchDiagram.Layout(analysis, "Ambient Jam");
+
+    [Theory]
+    [InlineData(DiagramFormat.Dot, false)]
+    [InlineData(DiagramFormat.Mermaid, false)]
+    [InlineData(DiagramFormat.Svg, false)]
+    [InlineData(DiagramFormat.Dot, true)]
+    [InlineData(DiagramFormat.Mermaid, true)]
+    [InlineData(DiagramFormat.Svg, true)]
+    public void MatchesGoldenFile(DiagramFormat format, bool folded)
+    {
+        string actual = PatchDiagram.Export(folded ? overview : layout, format).ReplaceLineEndings("\n");
+        string goldenPath = Path.Combine(GoldenDir(), (folded ? "AmbientJam.overview" : "AmbientJam") + PatchDiagram.Extension(format));
+
+        if (Environment.GetEnvironmentVariable("UPDATE_GOLDEN") == "1")
+        {
+            File.WriteAllText(goldenPath, actual);
+        }
+
+        Assert.True(File.Exists(goldenPath), $"Missing golden file {goldenPath}: run UPDATE_GOLDEN=1 dotnet test");
+        Assert.Equal(File.ReadAllText(goldenPath).ReplaceLineEndings("\n"), actual);
+    }
+
+    [Fact]
+    public void HtmlIsSelfContained()
+    {
+        string html = PatchDiagram.Export(layout, DiagramFormat.Html);
+
+        Assert.Contains("<svg", html);
+        Assert.Contains("data-layer-toggle", html);
+        Assert.DoesNotContain("<script src", html);
+        Assert.DoesNotContain("<link", html);
+    }
+
+    [Fact]
+    public void CustomIntentReplacesSuggestion()
+    {
+        long cableId = layout.Edges.First(e => e.FromTitle == "LLFO").CableIds.Single();
+        DiagramLayout custom = PatchDiagram.Layout(analysis, "Ambient Jam", PatchDiagram.GroupKeys(analysis), new Dictionary<long, string> { [cableId] = "the LFO makes the pulse width breathe" });
+
+        Assert.Equal("the LFO makes the pulse width breathe", custom.Edges.Single(e => e.CableIds.Contains(cableId)).Intent);
+        Assert.Contains("the LFO makes the pulse width breathe", PatchDiagram.Export(custom, DiagramFormat.Mermaid));
+    }
+
+    private static string GoldenDir([System.Runtime.CompilerServices.CallerFilePath] string thisFile = "") =>
+        Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "golden");
+
+    [Fact]
+    public void OverviewShowsOneBoxPerGroupAndMergesCables()
+    {
+        Assert.Equal(overview.Groups.Count, overview.Nodes.Count);
+        Assert.All(overview.Nodes, n => Assert.True(n.IsFolded));
+        Assert.Equal(overview.Edges.Count, overview.Edges.Select(e => (e.From, e.To, e.Signal)).Distinct().Count());
+        Assert.Contains(overview.Edges, e => !e.IsSingleCable);
+    }
+
+    [Fact]
+    public void UnfoldingOneGroupOnlyDetailsThatGroup()
+    {
+        DiagramLayout oneVoice = PatchDiagram.Layout(analysis, "Ambient Jam", new HashSet<string> { "voice-2" });
+
+        Assert.Contains(oneVoice.Nodes, n => n.Title == "PULSE" && !n.IsFolded);
+        Assert.DoesNotContain(oneVoice.Nodes, n => n.Title == "LVCO");
+        Assert.Single(oneVoice.Bands, b => b.Group == "voice-2");
+    }
+
+    [Theory]
+    [InlineData("AmbientJam.vcv", false)]
+    [InlineData("AmbientJam.vcv", true)]
+    [InlineData("MeditationsOnDeathRack.vcv", false)]
+    [InlineData("MeditationsOnDeathRack.vcv", true)]
+    [InlineData("Solar42f16.vcv", false)]
+    [InlineData("Solar42f16.vcv", true)]
+    [InlineData("NotBoringDrone3.vcv", false)]
+    [InlineData("NotBoringDrone3.vcv", true)]
+    [InlineData("FeedbackTest.vcv", false)]
+    [InlineData("FeedbackTest.vcv", true)]
+    public void HorizontalRunsNeverGoThroughAnotherBox(string fixture, bool unfoldAll)
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path(fixture)));
+        DiagramLayout diagram = PatchDiagram.Layout(patch, fixture, unfoldAll ? PatchDiagram.GroupKeys(patch) : null);
+        foreach (DiagramEdge edge in diagram.Edges.Where(e => e.Path.Contains(" H ", StringComparison.Ordinal)))
+        {
+            foreach ((double y, double fromX, double toX) in HorizontalRuns(edge.Path))
+            {
+                DiagramNode? crossed = diagram.Nodes.FirstOrDefault(n => n.Key != edge.From && n.Key != edge.To
+                    && y > n.Y && y < n.Y + n.Height && n.X < Math.Max(fromX, toX) && n.X + n.Width > Math.Min(fromX, toX));
+                Assert.True(crossed is null, $"{edge.FromTitle} → {edge.ToTitle} runs through {crossed?.Title}");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("AmbientJam.vcv", false)]
+    [InlineData("AmbientJam.vcv", true)]
+    [InlineData("MeditationsOnDeathRack.vcv", true)]
+    [InlineData("Solar42f16.vcv", true)]
+    [InlineData("NotBoringDrone3.vcv", false)]
+    public void ArrowsIntoABoxKeepRoomBetweenThem(string fixture, bool unfoldAll)
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path(fixture)));
+        DiagramLayout diagram = PatchDiagram.Layout(patch, fixture, unfoldAll ? PatchDiagram.GroupKeys(patch) : null);
+        foreach (IGrouping<string, DiagramEdge> target in diagram.Edges.Where(e => e.Path.Contains(" H ", StringComparison.Ordinal)).GroupBy(e => e.To))
+        {
+            List<double> arrows = target.Select(e => HorizontalRuns(e.Path).Last().Y).Order().ToList();
+            for (int i = 1; i < arrows.Count; i++)
+            {
+                Assert.True(arrows[i] - arrows[i - 1] >= 12, $"arrows into {diagram.Node(target.Key).Title} are {arrows[i] - arrows[i - 1]:0.#} px apart");
+            }
+        }
+    }
+
+    [Fact]
+    public void FeedbackCablesTurnBackToTheirTarget()
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path("FeedbackTest.vcv")));
+        DiagramLayout diagram = PatchDiagram.Layout(patch, "FeedbackTest", PatchDiagram.GroupKeys(patch));
+
+        List<DiagramEdge> feedback = diagram.Edges.Where(e => e.IsFeedback).ToList();
+        Assert.Equal(2, feedback.Count);
+        foreach (DiagramEdge edge in feedback)
+        {
+            // Out on the right of its source, back leftwards, in on the left of its target.
+            List<(double Y, double FromX, double ToX)> runs = HorizontalRuns(edge.Path).ToList();
+            Assert.True(runs[0].ToX > runs[0].FromX);
+            Assert.Contains(runs, r => r.ToX < r.FromX);
+            Assert.True(runs[^1].ToX > runs[^1].FromX);
+            Assert.True(runs[^1].ToX < diagram.Node(edge.To).X);
+            // Straight back: just the two U-turns, no jog in between.
+            Assert.Equal(2, VerticalChannels(edge.Path).Count());
+        }
+    }
+
+    [Fact]
+    public void BarycenterUntanglesCrossedLinks()
+    {
+        List<List<string>> columns = new List<List<string>> { new List<string> { "a", "b" }, new List<string> { "x", "y" } };
+        List<(string U, string V)> segments = new List<(string U, string V)> { ("a", "y"), ("b", "x") };
+        Assert.Equal(1, Barycenter.Crossings(columns, segments));
+
+        List<List<string>> ordered = Barycenter.Order(columns, segments, _ => 0);
+
+        Assert.Equal(0, Barycenter.Crossings(ordered, segments));
+    }
+
+    [Theory]
+    [InlineData("NotBoringDrone3.vcv")]
+    [InlineData("Solar42f16.vcv")]
+    [InlineData("MeditationsOnDeathRack.vcv")]
+    public void BusyGapsWidenSoChannelsKeepApart(string fixture)
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path(fixture)));
+        DiagramLayout diagram = PatchDiagram.Layout(patch, fixture, PatchDiagram.GroupKeys(patch));
+        List<double> channels = diagram.Edges.SelectMany(e => VerticalChannels(e.Path)).Distinct().Order().ToList();
+        for (int i = 1; i < channels.Count; i++)
+        {
+            Assert.True(channels[i] - channels[i - 1] >= 8, $"channels at x={channels[i - 1]} and x={channels[i]} are too close");
+        }
+    }
+
+    /// <summary>x of every vertical run ("… Q x y x y V y …") of a path.</summary>
+    private static IEnumerable<double> VerticalChannels(string path)
+    {
+        string[] tokens = path.Replace(",", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i + 5 < tokens.Length; i++)
+        {
+            if (tokens[i] == "Q" && tokens[i + 5] == "V")
+            {
+                yield return Parse(tokens[i + 1]);
+            }
+        }
+    }
+
+    /// <summary>Horizontal segments of a "M x y H x … Q … x y H x" path.</summary>
+    private static IEnumerable<(double Y, double FromX, double ToX)> HorizontalRuns(string path)
+    {
+        string[] tokens = path.Replace(",", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        double x = 0;
+        double y = 0;
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            switch (tokens[i])
+            {
+                case "M":
+                    x = Parse(tokens[++i]);
+                    y = Parse(tokens[++i]);
+                    break;
+                case "H":
+                    double nx = Parse(tokens[++i]);
+                    yield return (y, x, nx);
+                    x = nx;
+                    break;
+                case "V":
+                    y = Parse(tokens[++i]);
+                    break;
+                case "Q":
+                    i += 2;
+                    x = Parse(tokens[++i]);
+                    y = Parse(tokens[++i]);
+                    break;
+            }
+        }
+    }
+
+    private static double Parse(string text) => double.Parse(text, System.Globalization.CultureInfo.InvariantCulture);
+}

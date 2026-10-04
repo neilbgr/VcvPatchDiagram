@@ -1,0 +1,172 @@
+{
+  "Cardinal/HostAudio2": {
+    "inputs": [
+      "Left",
+      "Right"
+    ],
+    "outputs": [
+      "Left",
+      "Right"
+    ]
+  },
+  "Cardinal/HostAudio8": {
+    "inputs": [
+      "In 1",
+      "In 2",
+      "In 3",
+      "In 4",
+      "In 5",
+      "In 6",
+      "In 7",
+      "In 8"
+    ],
+    "outputs": [
+      "Out 1",
+      "Out 2",
+      "Out 3",
+      "Out 4",
+      "Out 5",
+      "Out 6",
+      "Out 7",
+      "Out 8"
+    ]
+  },
+  "MindMeldModular/AuxExpanderJr": {
+    "inputs": [
+      "Return A L",
+      "Return A R",
+      "Return B L",
+      "Return B R",
+      "Return C L",
+      "Return C R",
+      "Return D L",
+      "Return D R",
+      "Poly aux ad cv 1",
+      "Poly aux ad cv 2",
+      "Poly aux m cv",
+      "Poly grps ad cv",
+      "Poly grps m cv",
+      "Poly bus snd pan ret cv",
+      "Poly bus mute solo cv"
+    ],
+    "outputs": [
+      "Send A L",
+      "Send B L",
+      "Send C L",
+      "Send D L",
+      "Send A R",
+      "Send B R",
+      "Send C R",
+      "Send D R"
+    ]
+  },
+  "MindMeldModular/MixMasterJr": {
+    "inputs": [
+      "Track 1 L",
+      "Track 1 R",
+      "Track 2 L",
+      "Track 2 R",
+      "Track 3 L",
+      "Track 3 R",
+      "Track 4 L",
+      "Track 4 R",
+      "Track 5 L",
+      "Track 5 R",
+      "Track 6 L",
+      "Track 6 R",
+      "Track 7 L",
+      "Track 7 R",
+      "Track 8 L",
+      "Track 8 R",
+      "Track vol 1",
+      "Track vol 2",
+      "Track vol 3",
+      "Track vol 4",
+      "Track vol 5",
+      "Track vol 6",
+      "Track vol 7",
+      "Track vol 8",
+      "Group vol 1",
+      "Group vol 2",
+      "Track pan 1",
+      "Track pan 2",
+      "Track pan 3",
+      "Track pan 4",
+      "Track pan 5",
+      "Track pan 6",
+      "Track pan 7",
+      "Track pan 8",
+      "Group pan 1",
+      "Group pan 2",
+      "Chain 1",
+      "Chain 2",
+      "Insert return tracks 1-8 (poly)",
+      "Insert return groups/aux (poly)",
+      "Track mutesolo 1",
+      "Track mutesolo 2",
+      "Grpm mutesolo"
+    ],
+    "outputs": [
+      "Direct tracks 1-8 (poly)",
+      "Direct groups/aux (poly)",
+      "Main L",
+      "Main R",
+      "Insert send tracks 1-8 (poly)",
+      "Insert send groups/aux (poly)",
+      "Fade cv"
+    ]
+  },
+  "Venom/MixFade": {
+    "outputs": [
+      "Fade 1 level",
+      "Fade 2 level",
+      "Fade 3 level",
+      "Fade 4 level",
+      "Fade mix level"
+    ]
+  },
+  "Venom/MixFade2": {
+    "outputs": [
+      "Fade 1 level",
+      "Fade 2 level",
+      "Fade 3 level",
+      "Fade 4 level",
+      "Fade mix level"
+    ]
+  },
+  "Venom/MixMute": {
+    "inputs": [
+      "Mute 1",
+      "Mute 2",
+      "Mute 3",
+      "Mute 4",
+      "Mute Mix"
+    ]
+  },
+  "Venom/MixPan": {
+    "inputs": [
+      "Pan CV 1",
+      "Pan CV 2",
+      "Pan CV 3",
+      "Pan CV 4"
+    ]
+  },
+  "Venom/MixSend": {
+    "inputs": [
+      "Left return",
+      "Right return"
+    ],
+    "outputs": [
+      "Left send",
+      "Right send"
+    ]
+  },
+  "Venom/MixSolo": {
+    "inputs": [
+      "Solo 1",
+      "Solo 2",
+      "Solo 3",
+      "Solo 4"
+    ]
+  }
+}

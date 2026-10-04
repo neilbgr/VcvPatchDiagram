@@ -1,0 +1,43 @@
+flowchart LR
+  subgraph b0["External control (MIDI, host)"]
+    n_g_external["MIDI / host in<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::io
+  end
+  subgraph b1["Time & sequencing"]
+    n_g_time["Sequencing<br/>Clkd, ADDR-SEQ"]:::time
+  end
+  subgraph b2["Voices"]
+    n_g_voice_1["LVCO ← ADDR-SEQ<br/>VCF #2 · +2 mod"]:::source
+    n_g_voice_2["PULSE ← Host MIDI<br/>VCF #1 → Waveshaper → EQ · +4 mod"]:::source
+  end
+  subgraph b3["Mix & effects"]
+    n_g_bus["Mix & effects<br/>Random, MIX4, Plateau, Delay Plus Stereo Fx, Audio 2"]:::mixer
+  end
+  n_g_voice_1 ==>|"into MIX4"| n_g_bus
+  n_g_external -.->|"4 × gate / trig / clock"| n_g_voice_2
+  n_g_external -->|"2 × modulation"| n_g_voice_2
+  n_g_time -->|"plays the notes"| n_g_voice_1
+  n_g_time -.->|"fires the envelope / new value"| n_g_voice_1
+  n_g_external -->|"hand control of frequency & pre-filter gain"| n_g_voice_1
+  n_g_time -.->|"fires the envelope / new value"| n_g_bus
+  n_g_external -.->|"3 × gate / trig / clock"| n_g_time
+  n_g_external -->|"3 × pitch"| n_g_voice_2
+  n_g_voice_2 ==>|"into MIX4"| n_g_bus
+  linkStyle 0 stroke:#d64545
+  linkStyle 1 stroke:#2f74c4
+  linkStyle 2 stroke:#2c9457
+  linkStyle 3 stroke:#b97d00
+  linkStyle 4 stroke:#2f74c4
+  linkStyle 5 stroke:#2c9457
+  linkStyle 6 stroke:#2f74c4
+  linkStyle 7 stroke:#2f74c4
+  linkStyle 8 stroke:#b97d00
+  linkStyle 9 stroke:#d64545
+  classDef time stroke:#2f74c4,stroke-width:2px
+  classDef pitch stroke:#b97d00,stroke-width:2px
+  classDef controller stroke:#2c9457,stroke-width:2px
+  classDef source stroke:#d64545,stroke-width:2px
+  classDef modifier stroke:#c2611f,stroke-width:2px
+  classDef mixer stroke:#7a52b3,stroke-width:2px
+  classDef effect stroke:#b0479a,stroke-width:2px
+  classDef io stroke:#6b6b70,stroke-width:2px
+  classDef monitor stroke:#9a958a,stroke-width:1px,stroke-dasharray:2 3

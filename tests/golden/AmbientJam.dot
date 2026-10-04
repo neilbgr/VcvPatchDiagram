@@ -1,0 +1,73 @@
+digraph "Ambient Jam" {
+  rankdir=LR; newrank=true; compound=true; fontname="Helvetica";
+  node [shape=box, style="rounded,filled", fillcolor=white, fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9];
+  subgraph cluster_0 {
+    label="External control (MIDI, host)"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    n_m2 [label="Host MIDI\nCardinal", color="#6b6b70", penwidth=2];
+    n_m6218505374262194 [label="Host MIDI CC\nCardinal", color="#6b6b70", penwidth=2];
+    n_m3225582266994716 [label="Host MIDI Gate\nCardinal", color="#6b6b70", penwidth=2];
+  }
+  subgraph cluster_1 {
+    label="Time & sequencing"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    n_m1647006434782107 [label="Clkd\nImpromptuModular", color="#2f74c4", penwidth=2];
+    n_m5442970283678664 [label="ADDR-SEQ\nBogaudio + ASX", color="#2f74c4", penwidth=2];
+  }
+  subgraph cluster_2 {
+    label="Voice 1: LVCO ← ADDR-SEQ"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    n_m8599156609620611 [label="ADSR #3\nBogaudio", color="#2c9457", penwidth=2];
+    n_m2846238014348274 [label="Quantizer\nFundamental", color="#b97d00", penwidth=2];
+    n_m7521774204900965 [label="LVCO\nBogaudio", color="#d64545", penwidth=2];
+    n_m7411897278716254 [label="VCF #2\nSurgeXTRack", color="#c2611f", penwidth=2];
+  }
+  subgraph cluster_3 {
+    label="Voice 2: PULSE ← Host MIDI"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    n_m3898654702126135 [label="SLEW\nBogaudio", color="#2c9457", penwidth=2];
+    n_m5152299461796515 [label="LLFO\nBogaudio", color="#2c9457", penwidth=2];
+    n_m4235470771947441 [label="PULSE\nBogaudio", color="#d64545", penwidth=2];
+    n_m2208446996781428 [label="ADSR #1\nFundamental", color="#2c9457", penwidth=2];
+    n_m6726411345220971 [label="ADSR #2\nFundamental", color="#2c9457", penwidth=2];
+    n_m6452162562716294 [label="VCF #1\nSurgeXTRack", color="#c2611f", penwidth=2];
+    n_m8188053117264690 [label="Waveshaper\nSurgeXTRack", color="#c2611f", penwidth=2];
+    n_m4817828098405391 [label="EQ\nBogaudio", color="#c2611f", penwidth=2];
+  }
+  subgraph cluster_4 {
+    label="Mix & effects"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    n_m2629565538426473 [label="Random\nFundamental", color="#2c9457", penwidth=2];
+    n_m1105006806367356 [label="MIX4\nBogaudio", color="#7a52b3", penwidth=2];
+    n_m3951164105101658 [label="Plateau\nValley", color="#b0479a", penwidth=2];
+    n_m2112618335105631 [label="Delay Plus Stereo Fx\nAS", color="#b0479a", penwidth=2];
+    n_m1 [label="Audio 2\nCardinal", color="#6b6b70", penwidth=2];
+  }
+  n_m8599156609620611 -> n_m7411897278716254 [color="#2c9457", penwidth=1, label="ADSR moves pre-filter gain & frequency", tooltip="Envelope → Mod 4 → Frequency +23%, Pre-Filter Gain +48%"];
+  n_m7521774204900965 -> n_m7411897278716254 [color="#d64545", penwidth=3, label="audio", tooltip="Signal → Left"];
+  n_m7411897278716254 -> n_m1105006806367356 [color="#d64545", penwidth=3, label="into MIX4", tooltip="Left → Channel 2"];
+  n_m2 -> n_m2208446996781428 [color="#2f74c4", style=dashed, label="2 × gate / trig / clock", tooltip="Retrigger, Gate → ADSR #1 'Retrigger', ADSR #1 'Gate'"];
+  n_m2 -> n_m6726411345220971 [color="#2f74c4", style=dashed, label="2 × gate / trig / clock", tooltip="Retrigger, Gate → ADSR #2 'Retrigger', ADSR #2 'Gate'"];
+  n_m6726411345220971 -> n_m6452162562716294 [color="#2c9457", penwidth=1, label="ADSR moves frequency", tooltip="Envelope → Mod 1 → Frequency +39%"];
+  n_m2 -> n_m3898654702126135 [color="#2c9457", penwidth=1, label="hand control of signal", tooltip="Aftertouch → Signal"];
+  n_m5152299461796515 -> n_m4235470771947441 [color="#2c9457", penwidth=1, label="LLFO moves pulse width cv", tooltip="Signal → Pulse width CV"];
+  n_m6452162562716294 -> n_m8188053117264690 [color="#d64545", penwidth=3, label="audio", tooltip="Left → Left"];
+  n_m6726411345220971 -> n_m8188053117264690 [color="#2c9457", penwidth=1, label="ADSR moves drive", tooltip="Envelope → Mod 2 → Drive +28%"];
+  n_m3898654702126135 -> n_m6452162562716294 [color="#2c9457", penwidth=1, label="SLEW moves gain & frequency", tooltip="Signal → Mod 2 → Frequency +8%, Gain +14%"];
+  n_m4235470771947441 -> n_m6452162562716294 [color="#d64545", penwidth=3, label="audio", tooltip="Pulse → Left"];
+  n_m2208446996781428 -> n_m6452162562716294 [color="#2c9457", penwidth=1, label="ADSR moves pre-filter gain", tooltip="Envelope → Mod 4 → Pre-Filter Gain +65%"];
+  n_m3898654702126135 -> n_m8188053117264690 [color="#2c9457", penwidth=1, label="SLEW moves drive", tooltip="Signal → Mod 1 → Drive +11%"];
+  n_m5442970283678664 -> n_m2846238014348274 [color="#b97d00", penwidth=2, label="plays the notes", tooltip="Sequence → 1V/octave pitch"];
+  n_m1647006434782107 -> n_m5442970283678664 [color="#2f74c4", style=dashed, label="sets the tempo", tooltip="Master clock → Clock"];
+  n_m2846238014348274 -> n_m7521774204900965 [color="#b97d00", penwidth=2, label="plays the notes", tooltip="Pitch → Pitch (1V/octave)"];
+  n_m1647006434782107 -> n_m8599156609620611 [color="#2f74c4", style=dashed, label="fires the envelope / new value", tooltip="Clock 1 → Gate"];
+  n_m6218505374262194 -> n_m7411897278716254 [color="#2c9457", penwidth=1, label="hand control of frequency & pre-filter gain", tooltip="Cell 4 → Mod 3 → Frequency +40%, Pre-Filter Gain +7%"];
+  n_m1647006434782107 -> n_m2629565538426473 [color="#2f74c4", style=dashed, label="fires the envelope / new value", tooltip="Clock 1 → Trigger"];
+  n_m2629565538426473 -> n_m1105006806367356 [color="#2c9457", penwidth=1, label="Random moves channel 2 pan cv", tooltip="Smooth → Channel 2 pan CV"];
+  n_m3225582266994716 -> n_m1647006434782107 [color="#2f74c4", style=dashed, label="2 × gate / trig / clock", tooltip="Gate 13, Gate 7 → Clkd 'Run', Clkd 'Reset'"];
+  n_m1105006806367356 -> n_m3951164105101658 [color="#d64545", penwidth=3, label="2 × audio", tooltip="Right signal, Left signal → Plateau 'Right', Plateau 'Left'"];
+  n_m3951164105101658 -> n_m2112618335105631 [color="#d64545", penwidth=3, label="2 × audio", tooltip="Left, Right → Delay Plus Stereo Fx 'Left audio', Delay Plus Stereo Fx 'Right audio'"];
+  n_m2112618335105631 -> n_m1 [color="#d64545", penwidth=3, label="2 × audio", tooltip="Left audio, Right audio → Audio 2 'Left', Audio 2 'Right'"];
+  n_m6218505374262194 -> n_m6452162562716294 [color="#2c9457", penwidth=1, label="hand control of frequency", tooltip="Cell 1 → Mod 3 → Frequency +32%"];
+  n_m2 -> n_m4235470771947441 [color="#b97d00", penwidth=2, label="plays the notes", tooltip="1V/octave pitch → Pitch (1V/octave)"];
+  n_m2 -> n_m6726411345220971 [color="#b97d00", penwidth=2, label="2 × pitch", tooltip="1V/octave pitch → ADSR #2 'Attack', ADSR #2 'Sustain'"];
+  n_m3225582266994716 -> n_m5442970283678664 [color="#2f74c4", style=dashed, label="restarts", tooltip="Gate 7 → Reset"];
+  n_m8188053117264690 -> n_m4817828098405391 [color="#d64545", penwidth=3, label="audio", tooltip="Left → Signal"];
+  n_m4817828098405391 -> n_m1105006806367356 [color="#d64545", penwidth=3, label="into MIX4", tooltip="Signal → Channel 1"];
+}

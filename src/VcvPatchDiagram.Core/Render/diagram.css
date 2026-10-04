@@ -1,0 +1,152 @@
+﻿/* Shared by the SVG/HTML exporters and the Blazor app. Colors are tokens, redefined for dark mode. */
+.vpd-root {
+  --vpd-bg: #f6f5f2;
+  --vpd-panel: #ffffff;
+  --vpd-ink: #1d1d1f;
+  --vpd-muted: #6b6b70;
+  --vpd-line: #d9d7d2;
+  --vpd-band: #ecebe6;
+  --vpd-band-voice: #f3ece6;
+  --vpd-audio: #d64545;
+  --vpd-pitch: #b97d00;
+  --vpd-modulation: #2c9457;
+  --vpd-gate: #2f74c4;
+  --vpd-role-time: #2f74c4;
+  --vpd-role-pitch: #b97d00;
+  --vpd-role-controller: #2c9457;
+  --vpd-role-source: #d64545;
+  --vpd-role-modifier: #c2611f;
+  --vpd-role-mixer: #7a52b3;
+  --vpd-role-effect: #b0479a;
+  --vpd-role-io: #6b6b70;
+  --vpd-role-monitor: #9a958a;
+  color: var(--vpd-ink);
+  background: var(--vpd-bg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  .vpd-root:not([data-theme="light"]) {
+    --vpd-bg: #16171a;
+    --vpd-panel: #22242a;
+    --vpd-ink: #ececee;
+    --vpd-muted: #9a9aa2;
+    --vpd-line: #3a3c44;
+    --vpd-band: #1d1f24;
+    --vpd-band-voice: #241f1f;
+    --vpd-audio: #ff6b6b;
+    --vpd-pitch: #ffd452;
+    --vpd-modulation: #52e08a;
+    --vpd-gate: #5cb8ff;
+    --vpd-role-time: #5cb8ff;
+    --vpd-role-pitch: #ffd452;
+    --vpd-role-controller: #52e08a;
+    --vpd-role-source: #ff6b6b;
+    --vpd-role-modifier: #ff9a52;
+    --vpd-role-mixer: #b48cff;
+    --vpd-role-effect: #ff7ad1;
+    --vpd-role-io: #9a9aa2;
+    --vpd-role-monitor: #6f6c66;
+  }
+}
+.vpd-root[data-theme="dark"] {
+  --vpd-bg: #16171a;
+  --vpd-panel: #22242a;
+  --vpd-ink: #ececee;
+  --vpd-muted: #9a9aa2;
+  --vpd-line: #3a3c44;
+  --vpd-band: #1d1f24;
+  --vpd-band-voice: #241f1f;
+  --vpd-audio: #ff6b6b;
+  --vpd-pitch: #ffd452;
+  --vpd-modulation: #52e08a;
+  --vpd-gate: #5cb8ff;
+  --vpd-role-time: #5cb8ff;
+  --vpd-role-pitch: #ffd452;
+  --vpd-role-controller: #52e08a;
+  --vpd-role-source: #ff6b6b;
+  --vpd-role-modifier: #ff9a52;
+  --vpd-role-mixer: #b48cff;
+  --vpd-role-effect: #ff7ad1;
+  --vpd-role-io: #9a9aa2;
+  --vpd-role-monitor: #6f6c66;
+}
+
+/* Real size (or zoomed), never squeezed to the page width: the scroll box pans instead. */
+.vpd-svg { display: block; max-width: none; }
+.vpd-svg text { font-family: inherit; fill: var(--vpd-ink); }
+
+/* Bands */
+.vpd-band rect { fill: var(--vpd-band); }
+.vpd-band.band-voice rect { fill: var(--vpd-band-voice); }
+.vpd-band text { font-size: 12px; font-weight: 600; letter-spacing: .04em; fill: var(--vpd-muted); text-transform: uppercase; }
+.vpd-band.unfolded rect { stroke: var(--vpd-line); stroke-dasharray: 5 4; }
+.vpd-root.interactive .vpd-band.unfolded { cursor: zoom-out; }
+
+/* Modules */
+.vpd-node rect.box { fill: var(--vpd-panel); stroke: var(--vpd-line); stroke-width: 1; }
+.vpd-node rect.stripe { fill: var(--role-color); }
+.vpd-node.insert rect.box { stroke-dasharray: 4 3; }
+.vpd-node rect.stack { fill: var(--vpd-panel); stroke: var(--vpd-line); }
+.vpd-node.folded rect.box { stroke: var(--role-color); stroke-width: 1.5; }
+.vpd-root.interactive .vpd-node.folded { cursor: zoom-in; }
+.vpd-node .title { font-size: 13px; font-weight: 600; }
+.vpd-node .subtitle { font-size: 10.5px; fill: var(--vpd-muted); }
+.vpd-node { cursor: default; }
+.role-time { --role-color: var(--vpd-role-time); }
+.role-pitch { --role-color: var(--vpd-role-pitch); }
+.role-controller { --role-color: var(--vpd-role-controller); }
+.role-source { --role-color: var(--vpd-role-source); }
+.role-modifier { --role-color: var(--vpd-role-modifier); }
+.role-mixer { --role-color: var(--vpd-role-mixer); }
+.role-effect { --role-color: var(--vpd-role-effect); }
+.role-io { --role-color: var(--vpd-role-io); }
+.role-monitor { --role-color: var(--vpd-role-monitor); }
+.vpd-node .watch circle { fill: var(--vpd-panel); stroke: var(--vpd-role-monitor); stroke-width: 1.5; }
+.vpd-node .watch text { font-size: 11px; }
+
+/* Cables: thick solid = audio, colored = pitch, thin = modulation and gate / trig / clock */
+.vpd-edge path { fill: none; stroke: var(--sig-color); }
+.vpd-edge.sig-audio { --sig-color: var(--vpd-audio); }
+.vpd-edge.sig-audio path { stroke-width: 3.2; }
+.vpd-edge.sig-pitch { --sig-color: var(--vpd-pitch); }
+.vpd-edge.sig-pitch path { stroke-width: 2.2; }
+.vpd-edge.sig-cv { --sig-color: var(--vpd-modulation); }
+.vpd-edge.sig-cv path { stroke-width: 1.5; }
+.vpd-edge.sig-gate { --sig-color: var(--vpd-gate); }
+.vpd-edge.sig-gate path { stroke-width: 1.5; }
+.vpd-edge.merged path:not(.hit) { stroke-width: 4; }
+.vpd-edge .feedback-tag { font-size: 10px; fill: var(--sig-color); paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; }
+.vpd-edge .label { font-size: 11px; paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; display: none; }
+.vpd-edge .hit { stroke: transparent; stroke-width: 10; }
+.vpd-marker-audio { fill: var(--vpd-audio); }
+.vpd-marker-pitch { fill: var(--vpd-pitch); }
+.vpd-marker-cv { fill: var(--vpd-modulation); }
+.vpd-marker-gate { fill: var(--vpd-gate); }
+
+/* Layers and focus */
+.vpd-root.hide-audio .layer-audio,
+.vpd-root.hide-pitch .layer-pitch,
+.vpd-root.hide-modulation .layer-modulation,
+.vpd-root.hide-gate .layer-gate { display: none; }
+.vpd-root.show-intents .vpd-edge .label { display: inline; }
+.vpd-root.focus .vpd-node:not(.hl) { opacity: .25; }
+.vpd-root.focus .vpd-edge:not(.hl) { opacity: .08; }
+.vpd-root.focus .vpd-edge.hl .label { display: inline; }
+.vpd-node, .vpd-edge { transition: opacity .15s; }
+
+/* Page chrome (static HTML and Blazor) */
+/* Full window width: patches get big, every pixel goes to the diagram. */
+.vpd-page { padding: 8px 10px; }
+.vpd-page h1 { font-size: 20px; margin: 0 0 4px; }
+.vpd-page .vpd-sub { color: var(--vpd-muted); margin: 0 0 12px; font-size: 13px; }
+.vpd-toolbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 12px; font-size: 13px; }
+.vpd-toolbar .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vpd-toolbar button { font: inherit; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--vpd-line); background: var(--vpd-panel); color: var(--vpd-ink); cursor: pointer; }
+.vpd-toolbar button:hover { border-color: var(--vpd-muted); }
+.vpd-toolbar label { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; }
+.vpd-toolbar .swatch { width: 18px; height: 0; border-top: 3px solid var(--c); display: inline-block; }
+.vpd-scroll { overflow: auto; max-height: calc(100vh - 120px); min-height: 240px; border: 1px solid var(--vpd-line); border-radius: 8px; background: var(--vpd-bg); cursor: grab; touch-action: none; }
+.vpd-scroll.panning { cursor: grabbing; user-select: none; }
+.vpd-zoom-label { min-width: 3.5em; text-align: center; color: var(--vpd-muted); }
+.vpd-diag { margin-top: 12px; font-size: 13px; color: var(--vpd-muted); }
+.vpd-diag li { margin: 2px 0; }

@@ -1,0 +1,183 @@
+AmbientModules/Blank: struct 'Blank' has no resolvable InputIds/OutputIds enum
+AnimatedCircuits/ACFolding: no createModel<...>("ACFolding") registration found
+AnimatedCircuits/ACLFold: no createModel<...>("ACLFold") registration found
+BaconMusic/Glissinator: struct 'GlissinatorWidget::G' has no resolvable InputIds/OutputIds enum
+BaconMusic/PolyGnome: struct 'PolyGnomeWidget::M' has no resolvable InputIds/OutputIds enum
+BaconMusic/SampleDelay: struct 'SampleDelayWidget::SD' has no resolvable InputIds/OutputIds enum
+BaconMusic/PleaseQuit: struct 'PleaseQuitWidget::SD' has no resolvable InputIds/OutputIds enum
+Cardinal/HostAudio2: struct 'HostAudio2' has no resolvable InputIds/OutputIds enum
+Cardinal/HostAudio8: struct 'HostAudio8' has no resolvable InputIds/OutputIds enum
+Cardinal/HostParameters: struct 'HostParameters' has no resolvable InputIds/OutputIds enum
+Cardinal/TextEditor: struct 'TextEditorModule' has no resolvable InputIds/OutputIds enum
+ChowDSP/ChowPulse: struct 'ChowPulse' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Blossom: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/BoosterStage: struct 'booster_stage::Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Buttons: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Cubic: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/CurveSequencer4: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/CurveSequencer8: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/CurveSequencer16: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/FuzzyLogicH: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/FuzzyLogicZ: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Func: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Func6: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Gator: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Hostage: struct 'hostage::Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Ranger: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Scannibal4: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Scannibal8: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Scannibal16: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Sequencizer4: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Sequencizer8: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Sequencizer16: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Stage: struct 'stage::Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Swave: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Tapers: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Truth2: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Truth3: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Truth4: struct 'Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Upstage: struct 'upstage::Module' has no resolvable InputIds/OutputIds enum
+DHE-Modules/Xycloid: struct 'Module' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-8CV: struct 'Module8CV' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-8GT: struct 'Module8GT' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-ES5: struct 'ModuleES5' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-ES40: struct 'ModuleES40' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-Calibrator: struct 'ModuleCalibrator' has no resolvable InputIds/OutputIds enum
+ExpertSleepers-Encoders/ExpertSleepers-Encoders-SMUX: struct 'ModuleSMUX' has no resolvable InputIds/OutputIds enum
+ImpromptuModular/Blank-Panel: struct 'BlankPanel' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_1HP: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_2HP: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_4HP: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_SM: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_MD: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/BlankPanel_LG: struct 'Module' has no resolvable InputIds/OutputIds enum
+JW-Modules/CoolBreeze: struct 'Module' has no resolvable InputIds/OutputIds enum
+MindMeldModular/PatchMasterBlank: struct 'PatchMasterBlank' has no resolvable InputIds/OutputIds enum
+MindMeldModular/ShapeMaster: struct 'ShapeMaster' has no resolvable InputIds/OutputIds enum
+CosineKitty-Sapphire/Chaops: no createModel<...>("Chaops") registration found
+CosineKitty-Sapphire/Echo: no createModel<...>("Echo") registration found
+CosineKitty-Sapphire/EchoOut: no createModel<...>("EchoOut") registration found
+CosineKitty-Sapphire/EchoTap: no createModel<...>("EchoTap") registration found
+CosineKitty-Sapphire/Elastika: no createModel<...>("Elastika") registration found
+CosineKitty-Sapphire/Empath: no createModel<...>("Empath") registration found
+CosineKitty-Sapphire/EmpathFilter: no createModel<...>("EmpathFilter") registration found
+CosineKitty-Sapphire/EmpathOutput: no createModel<...>("EmpathOutput") registration found
+CosineKitty-Sapphire/Env: no createModel<...>("Env") registration found
+CosineKitty-Sapphire/Frolic: no createModel<...>("Frolic") registration found
+CosineKitty-Sapphire/Galaxy: no createModel<...>("Galaxy") registration found
+CosineKitty-Sapphire/Glee: no createModel<...>("Glee") registration found
+CosineKitty-Sapphire/Gravy: no createModel<...>("Gravy") registration found
+CosineKitty-Sapphire/Hiss: no createModel<...>("Hiss") registration found
+CosineKitty-Sapphire/Lark: no createModel<...>("Lark") registration found
+CosineKitty-Sapphire/Moots: no createModel<...>("Moots") registration found
+CosineKitty-Sapphire/Nucleus: no createModel<...>("Nucleus") registration found
+CosineKitty-Sapphire/Pivot: no createModel<...>("Pivot") registration found
+CosineKitty-Sapphire/Polynucleus: no createModel<...>("Polynucleus") registration found
+CosineKitty-Sapphire/Pop: no createModel<...>("Pop") registration found
+CosineKitty-Sapphire/Rotini: no createModel<...>("Rotini") registration found
+CosineKitty-Sapphire/Sauce: no createModel<...>("Sauce") registration found
+CosineKitty-Sapphire/SplitAddMerge: no createModel<...>("SplitAddMerge") registration found
+CosineKitty-Sapphire/Tin: no createModel<...>("Tin") registration found
+CosineKitty-Sapphire/Tout: no createModel<...>("Tout") registration found
+CosineKitty-Sapphire/Tricorder: no createModel<...>("Tricorder") registration found
+CosineKitty-Sapphire/TubeUnit: no createModel<...>("TubeUnit") registration found
+CosineKitty-Sapphire/Zoo: no createModel<...>("Zoo") registration found
+CountModula/StepSequencer8: no createModel<...>("StepSequencer8") registration found
+CountModula/TriggerSequencer8: no createModel<...>("TriggerSequencer8") registration found
+CountModula/TriggerSequencer16: no createModel<...>("TriggerSequencer16") registration found
+CountModula/RackEarLeft: no createModel<...>("RackEarLeft") registration found
+CountModula/RackEarRight: no createModel<...>("RackEarRight") registration found
+CountModula/Blank2HP: no createModel<...>("Blank2HP") registration found
+CountModula/Blank4HP: no createModel<...>("Blank4HP") registration found
+CountModula/Blank8HP: no createModel<...>("Blank8HP") registration found
+CountModula/Blank12HP: no createModel<...>("Blank12HP") registration found
+CountModula/Blank16HP: no createModel<...>("Blank16HP") registration found
+CountModula/Blank20HP: no createModel<...>("Blank20HP") registration found
+CountModula/Blank24HP: no createModel<...>("Blank24HP") registration found
+CountModula/GateSequencer8: no createModel<...>("GateSequencer8") registration found
+CountModula/GateSequencer16: no createModel<...>("GateSequencer16") registration found
+CountModula/Sequencer16: no createModel<...>("Sequencer16") registration found
+CountModula/Sequencer8: no createModel<...>("Sequencer8") registration found
+CountModula/SequencerChannel16: no createModel<...>("SequencerChannel16") registration found
+CountModula/SequencerChannel8: no createModel<...>("SequencerChannel8") registration found
+CountModula/SequencerGates8: no createModel<...>("SequencerGates8") registration found
+CountModula/SequencerGates16: no createModel<...>("SequencerGates16") registration found
+CountModula/Switch1To8: no createModel<...>("Switch1To8") registration found
+CountModula/Switch8To1: no createModel<...>("Switch8To1") registration found
+CountModula/Switch1To16: no createModel<...>("Switch1To16") registration found
+CountModula/Switch16To1: no createModel<...>("Switch16To1") registration found
+CountModula/SequencerTriggers8: no createModel<...>("SequencerTriggers8") registration found
+CountModula/SequencerTriggers16: no createModel<...>("SequencerTriggers16") registration found
+CountModula/EventTimer: no createModel<...>("EventTimer") registration found
+CountModula/EventTimer2: no createModel<...>("EventTimer2") registration found
+CountModula/OctetTriggerSequencerCVExpander: no createModel<...>("OctetTriggerSequencerCVExpander") registration found
+CountModula/OctetTriggerSequencerGateExpander: no createModel<...>("OctetTriggerSequencerGateExpander") registration found
+CountModula/MultiStepSequencer: no createModel<...>("MultiStepSequencer") registration found
+CountModula/GateSequencer16b: no createModel<...>("GateSequencer16b") registration found
+CountModula/ShiftRegister16: no createModel<...>("ShiftRegister16") registration found
+CountModula/ShiftRegister32: no createModel<...>("ShiftRegister32") registration found
+Venom/AuxClone: struct 'Venom::AuxClone' has no resolvable InputIds/OutputIds enum
+Venom/BayInput: struct 'Venom::BayInput' has no resolvable InputIds/OutputIds enum
+Venom/BayNorm: struct 'Venom::BayNorm' has no resolvable InputIds/OutputIds enum
+Venom/BayOutput: struct 'Venom::BayOutput' has no resolvable InputIds/OutputIds enum
+Venom/BenjolinGatesExpander: struct 'Venom::BenjolinGatesExpander' has no resolvable InputIds/OutputIds enum
+Venom/BenjolinVoltsExpander: struct 'Venom::BenjolinVoltsExpander' has no resolvable InputIds/OutputIds enum
+Venom/BernoulliSwitchExpander: struct 'Venom::BernoulliSwitchExpander' has no resolvable InputIds/OutputIds enum
+Venom/LinearBeatsExpander: struct 'Venom::LinearBeatsExpander' has no resolvable InputIds/OutputIds enum
+Venom/MixFade: struct 'Venom::MixFade' has no resolvable InputIds/OutputIds enum
+Venom/MixFade2: struct 'Venom::MixFade2' has no resolvable InputIds/OutputIds enum
+Venom/MixMute: struct 'Venom::MixMute' has no resolvable InputIds/OutputIds enum
+Venom/MixOffset: struct 'Venom::MixOffset' has no resolvable InputIds/OutputIds enum
+Venom/MixPan: struct 'Venom::MixPan' has no resolvable InputIds/OutputIds enum
+Venom/MixSend: struct 'Venom::MixSend' has no resolvable InputIds/OutputIds enum
+Venom/MixSolo: struct 'Venom::MixSolo' has no resolvable InputIds/OutputIds enum
+Venom/Thru: struct 'Venom::Thru' has no resolvable InputIds/OutputIds enum
+Venom/VenomBlank: struct 'Venom::VenomBlank' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_4_0_4: struct 'Mixer_4_0_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_9_3_4: struct 'Mixer_9_3_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_16_4_4: struct 'Mixer_16_4_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_24_4_4: struct 'Mixer_24_4_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_4_0_4: struct 'Mixer_4_0_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_9_3_4: struct 'Mixer_9_3_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_16_4_4: struct 'Mixer_16_4_4' has no resolvable InputIds/OutputIds enum
+mscHack/Mix_24_4_4: struct 'Mixer_24_4_4' has no resolvable InputIds/OutputIds enum
+NonlinearCircuits/SlothTorpor: struct 'SlothTorporModule' has no resolvable InputIds/OutputIds enum
+NonlinearCircuits/SlothApathy: struct 'SlothApathyModule' has no resolvable InputIds/OutputIds enum
+NonlinearCircuits/SlothInertia: struct 'SlothInertiaModule' has no resolvable InputIds/OutputIds enum
+Stoermelder-P1/MidiCat: struct 'StoermelderPackOne::MidiCat::MidiCatModule' has no resolvable InputIds/OutputIds enum
+Stoermelder-P1/MidiPlug: struct 'StoermelderPackOne::MidiPlug::MidiPlugModule' has no resolvable InputIds/OutputIds enum
+Stoermelder-P1/MidiKey: struct 'StoermelderPackOne::MidiKey::MidiKeyModule' has no resolvable InputIds/OutputIds enum
+SurgeXTRack/SurgeXTOSCModern: no createModel<...>("SurgeXTOSCModern") registration found
+SurgeXTRack/SurgeXTOSCClassic: no createModel<...>("SurgeXTOSCClassic") registration found
+SurgeXTRack/SurgeXTOSCWavetable: no createModel<...>("SurgeXTOSCWavetable") registration found
+SurgeXTRack/SurgeXTOSCWindow: no createModel<...>("SurgeXTOSCWindow") registration found
+SurgeXTRack/SurgeXTOSCSine: no createModel<...>("SurgeXTOSCSine") registration found
+SurgeXTRack/SurgeXTOSCFM2: no createModel<...>("SurgeXTOSCFM2") registration found
+SurgeXTRack/SurgeXTOSCFM3: no createModel<...>("SurgeXTOSCFM3") registration found
+SurgeXTRack/SurgeXTOSCSHNoise: no createModel<...>("SurgeXTOSCSHNoise") registration found
+SurgeXTRack/SurgeXTOSCAlias: no createModel<...>("SurgeXTOSCAlias") registration found
+SurgeXTRack/SurgeXTOSCString: no createModel<...>("SurgeXTOSCString") registration found
+SurgeXTRack/SurgeXTOSCTwist: no createModel<...>("SurgeXTOSCTwist") registration found
+SurgeXTRack/SurgeXTFXReverb: no createModel<...>("SurgeXTFXReverb") registration found
+SurgeXTRack/SurgeXTFXPhaser: no createModel<...>("SurgeXTFXPhaser") registration found
+SurgeXTRack/SurgeXTFXRotarySpeaker: no createModel<...>("SurgeXTFXRotarySpeaker") registration found
+SurgeXTRack/SurgeXTFXDistortion: no createModel<...>("SurgeXTFXDistortion") registration found
+SurgeXTRack/SurgeXTFXFrequencyShifter: no createModel<...>("SurgeXTFXFrequencyShifter") registration found
+SurgeXTRack/SurgeXTFXChorus: no createModel<...>("SurgeXTFXChorus") registration found
+SurgeXTRack/SurgeXTFXVocoder: no createModel<...>("SurgeXTFXVocoder") registration found
+SurgeXTRack/SurgeXTFXReverb2: no createModel<...>("SurgeXTFXReverb2") registration found
+SurgeXTRack/SurgeXTFXFlanger: no createModel<...>("SurgeXTFXFlanger") registration found
+SurgeXTRack/SurgeXTFXRingMod: no createModel<...>("SurgeXTFXRingMod") registration found
+SurgeXTRack/SurgeXTFXNeuron: no createModel<...>("SurgeXTFXNeuron") registration found
+SurgeXTRack/SurgeXTFXResonator: no createModel<...>("SurgeXTFXResonator") registration found
+SurgeXTRack/SurgeXTFXChow: no createModel<...>("SurgeXTFXChow") registration found
+SurgeXTRack/SurgeXTFXExciter: no createModel<...>("SurgeXTFXExciter") registration found
+SurgeXTRack/SurgeXTFXEnsemble: no createModel<...>("SurgeXTFXEnsemble") registration found
+SurgeXTRack/SurgeXTFXCombulator: no createModel<...>("SurgeXTFXCombulator") registration found
+SurgeXTRack/SurgeXTFXSpringReverb: no createModel<...>("SurgeXTFXSpringReverb") registration found
+SurgeXTRack/SurgeXTFXTreeMonster: no createModel<...>("SurgeXTFXTreeMonster") registration found
+SurgeXTRack/SurgeXTFXBonsai: no createModel<...>("SurgeXTFXBonsai") registration found
+SurgeXTRack/SurgeXTFXNimbus: no createModel<...>("SurgeXTFXNimbus") registration found
+SurgeXTRack/SurgeXTMixer: no createModel<...>("SurgeXTMixer") registration found
+SurgeXTRack/SurgeXTMixerSlider: no createModel<...>("SurgeXTMixerSlider") registration found
+unless_modules/atoms: no createModel<...>("atoms") registration found

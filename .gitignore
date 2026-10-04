@@ -55,3 +55,18 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.user
+
+# Publish output (make publish-*)
+publish/
+
+# Local renders and scratch output
+out/
+
+# Copied from src/VcvPatchDiagram.Core/Render at build time (single source of truth in Core)
+src/VcvPatchDiagram.Web/wwwroot/js/panzoom.js

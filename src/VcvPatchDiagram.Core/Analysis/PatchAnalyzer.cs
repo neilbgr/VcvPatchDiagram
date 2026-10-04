@@ -152,8 +152,9 @@ public sealed class PatchAnalyzer
 
     /// <summary>
     /// Roles that depend on the patch:
-    ///  - an I/O module with inputs and outputs (keyboard zones, MIDI pads…) relays the outside world only when everything
-    ///    it receives comes from the outside (Host MIDI or another relay); otherwise it's a pitch/time/control utility;
+    ///  - an I/O or performance module with inputs and outputs (keyboard zones, MIDI pads, on-screen pads, joystick…) relays
+    ///    the outside world only when everything it receives comes from the outside (Host MIDI, the musician or another
+    ///    relay); otherwise another module plays it and it's a pitch/time/control utility;
     ///  - a "visual" module that also sends signals out (a piano display with outputs) is a controller, not a monitor.
     /// </summary>
     private static void ResolveContextualRoles(List<PatchModule> shown, List<AnalyzedCable> cables, Dictionary<long, Role> roleById)
@@ -166,8 +167,9 @@ public sealed class PatchAnalyzer
             roleById[module.Id] = Role.Controller;
         }
 
-        List<long> relays = shown.Where(m => roleById[m.Id] == Role.Io && HasOutputs(m.Id) && Inputs(m.Id).Count > 0).Select(m => m.Id).ToList();
-        HashSet<long> outside = shown.Where(m => roleById[m.Id] == Role.Io && HasOutputs(m.Id) && Inputs(m.Id).Count == 0).Select(m => m.Id).ToHashSet();
+        bool Outer(long id) => roleById[id] is Role.Io or Role.Performance && HasOutputs(id);
+        List<long> relays = shown.Where(m => Outer(m.Id) && Inputs(m.Id).Count > 0).Select(m => m.Id).ToList();
+        HashSet<long> outside = shown.Where(m => Outer(m.Id) && Inputs(m.Id).Count == 0).Select(m => m.Id).ToHashSet();
         for (bool changed = true; changed;)
         {
             changed = false;
@@ -203,6 +205,7 @@ public sealed class PatchAnalyzer
         Role.Mixer or Role.Effect or Role.Modifier => Band.Bus,
         // Inputs from the outside world get their own band on top; outputs to the outside close the bus.
         Role.Io => cables.Any(c => c.Cable.From.ModuleId == moduleId) ? Band.External : Band.Bus,
+        Role.Performance => Band.External,
         Role.Monitor => Band.Monitor,
         _ => Band.Modulation,
     };

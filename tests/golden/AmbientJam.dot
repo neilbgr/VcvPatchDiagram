@@ -3,7 +3,7 @@ digraph "Ambient Jam" {
   node [shape=box, style="rounded,filled", fillcolor=white, fontname="Helvetica", fontsize=11];
   edge [fontname="Helvetica", fontsize=9];
   subgraph cluster_0 {
-    label="External control (MIDI, host)"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
+    label="Performance (MIDI, host, played live)"; style="rounded,filled"; color="#e6e4de"; fillcolor="#f4f3ef";
     n_m2 [label="Host MIDI\nCardinal", color="#6b6b70", penwidth=2];
     n_m6218505374262194 [label="Host MIDI CC\nCardinal", color="#6b6b70", penwidth=2];
     n_m3225582266994716 [label="Host MIDI Gate\nCardinal", color="#6b6b70", penwidth=2];

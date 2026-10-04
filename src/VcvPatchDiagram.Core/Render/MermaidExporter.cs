@@ -55,6 +55,7 @@ public static class MermaidExporter
         mmd.AppendLine("  classDef mixer stroke:#7a52b3,stroke-width:2px");
         mmd.AppendLine("  classDef effect stroke:#b0479a,stroke-width:2px");
         mmd.AppendLine("  classDef io stroke:#6b6b70,stroke-width:2px");
+        mmd.AppendLine("  classDef performance stroke:#138a8a,stroke-width:2px");
         mmd.AppendLine("  classDef monitor stroke:#9a958a,stroke-width:1px,stroke-dasharray:2 3");
         return mmd.ToString();
     }

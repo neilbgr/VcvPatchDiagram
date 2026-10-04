@@ -33,7 +33,7 @@ public static class IntentSuggester
                 }
                 return port.Contains("run") ? "starts / stops" : $"triggers {port}";
             default:
-                return fromRole == Role.Io ? $"hand control of {port}" : $"{Short(fromTitle)} moves {port}";
+                return fromRole is Role.Io or Role.Performance ? $"hand control of {port}" : $"{Short(fromTitle)} moves {port}";
         }
     }
 
@@ -41,7 +41,7 @@ public static class IntentSuggester
     public static string SuggestMod(string fromTitle, Role fromRole, IReadOnlyList<ModRoute> routes)
     {
         string targets = string.Join(" & ", routes.OrderByDescending(r => Math.Abs(r.Depth)).Select(r => r.Target.ToLowerInvariant()));
-        return fromRole == Role.Io ? $"hand control of {targets}" : $"{Short(fromTitle)} moves {targets}";
+        return fromRole is Role.Io or Role.Performance ? $"hand control of {targets}" : $"{Short(fromTitle)} moves {targets}";
     }
 
     private static string Short(string title) => title.Split(' ')[0];

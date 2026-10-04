@@ -88,7 +88,7 @@ public static class PatchGrouping
     /// <summary>Short name for a folded box.</summary>
     public static string BoxTitle(Band band) => band switch
     {
-        Band.External => "MIDI / host in",
+        Band.External => "Played live",
         Band.Time => "Sequencing",
         Band.Pitch => "Pitch processing",
         Band.Modulation => "Shared modulation",
@@ -99,7 +99,7 @@ public static class PatchGrouping
 
     public static string BandTitle(Band band, bool shared) => band switch
     {
-        Band.External => "External control (MIDI, host)",
+        Band.External => "Performance (MIDI, host, played live)",
         Band.Time => "Time & sequencing",
         Band.Pitch => shared ? "Shared pitch processing" : "Pitch",
         Band.Modulation => shared ? "Shared modulation" : "Modulation",
@@ -110,7 +110,7 @@ public static class PatchGrouping
 
     private static Role RoleOf(Band band) => band switch
     {
-        Band.External => Role.Io,
+        Band.External => Role.Performance,
         Band.Time => Role.Time,
         Band.Pitch => Role.Pitch,
         Band.Bus => Role.Mixer,

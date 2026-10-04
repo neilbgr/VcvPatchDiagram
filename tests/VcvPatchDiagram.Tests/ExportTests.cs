@@ -145,6 +145,27 @@ public class ExportTests
         }
     }
 
+    [Theory]
+    [InlineData("AmbientJam.vcv")]
+    [InlineData("MeditationsOnDeathRack.vcv")]
+    [InlineData("Solar42f16.vcv")]
+    [InlineData("NotBoringDrone3.vcv")]
+    [InlineData("FeedbackTest.vcv")]
+    public void OnlyGroupsOfSeveralModulesAreFolded(string fixture)
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path(fixture)));
+        DiagramLayout overview = PatchDiagram.Layout(patch, fixture, null);
+
+        Assert.All(overview.Nodes.Where(n => n.IsFolded), n => Assert.True(overview.Groups.Single(g => g.Key == n.Group).Members.Count > 1, $"{n.Title} folds a single module"));
+        foreach (PatchGroup single in overview.Groups.Where(g => g.Members.Count == 1))
+        {
+            DiagramNode node = overview.Node(LayeredLayout.ModuleKey(single.Members[0]));
+            Assert.False(node.IsFolded);
+            // Still in its band's shared lane, not in a lane of its own.
+            Assert.Contains(overview.Bands, b => b.Group is null && b.Band == single.Band && node.Y > b.Y && node.Y < b.Y + b.Height);
+        }
+    }
+
     [Fact]
     public void BarycenterUntanglesCrossedLinks()
     {

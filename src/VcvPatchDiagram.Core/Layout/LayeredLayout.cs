@@ -49,15 +49,18 @@ public static class LayeredLayout
         HashSet<long> visible = groups.SelectMany(g => g.Members).ToHashSet();
         List<AnalyzedCable> cables = analysis.Cables.Where(c => visible.Contains(c.Cable.From.ModuleId) && visible.Contains(c.Cable.To.ModuleId)).ToList();
         bool IsUnfolded(PatchGroup g) => unfolded is not null && unfolded.Contains(g.Key);
+        // A group of one module is never folded: a folded box promises more than it holds. It stays in its band's lane.
+        bool ShowsModules(PatchGroup g) => IsUnfolded(g) || g.Members.Count == 1;
+        bool HasOwnLane(PatchGroup g) => IsUnfolded(g) && g.Members.Count > 1;
         Dictionary<long, PatchGroup> groupOf = groups.SelectMany(g => g.Members.Select(id => (id, g))).ToDictionary(p => p.id, p => p.g);
 
         // Visible box of each module: itself if its group is unfolded, the group's box otherwise.
-        string BoxOf(long moduleId) => IsUnfolded(groupOf[moduleId]) ? ModuleKey(moduleId) : GroupKey(groupOf[moduleId].Key);
+        string BoxOf(long moduleId) => ShowsModules(groupOf[moduleId]) ? ModuleKey(moduleId) : GroupKey(groupOf[moduleId].Key);
 
         List<string> boxes = new List<string>();
         foreach (PatchGroup group in groups)
         {
-            if (IsUnfolded(group))
+            if (ShowsModules(group))
             {
                 boxes.AddRange(group.Members.Where(id => analysis.Module(id).InsertOf is null || !group.Members.Contains(analysis.Module(id).InsertOf!.Value)).Select(ModuleKey));
             }
@@ -96,17 +99,17 @@ public static class LayeredLayout
             .Distinct().ToList();
         Dictionary<string, int> column = Depths(boxes, links);
 
-        // Lanes: per band, one lane for its folded groups, then one lane per unfolded group.
+        // Lanes: per band, one lane for its folded groups and single modules, then one lane per unfolded group.
         List<(Band Band, string? Group, string Title, List<string> Boxes)> lanes = new List<(Band, string?, string, List<string>)>();
         foreach (Band band in Enum.GetValues<Band>())
         {
             List<PatchGroup> inBand = groups.Where(g => g.Band == band).ToList();
-            List<string> folded = inBand.Where(g => !IsUnfolded(g)).Select(g => GroupKey(g.Key)).ToList();
+            List<string> folded = inBand.Where(g => !HasOwnLane(g)).Select(g => ShowsModules(g) ? ModuleKey(g.Members[0]) : GroupKey(g.Key)).ToList();
             if (folded.Count > 0)
             {
                 lanes.Add((band, null, PatchGrouping.BandTitle(band, shared: false), folded));
             }
-            foreach (PatchGroup group in inBand.Where(IsUnfolded))
+            foreach (PatchGroup group in inBand.Where(HasOwnLane))
             {
                 lanes.Add((band, group.Key, group.Title, boxes.Where(b => b.StartsWith('m') && group.Members.Contains(ModuleIdOf(b))).ToList()));
             }
@@ -288,7 +291,7 @@ public static class LayeredLayout
         List<DiagramNode> nodes = new List<DiagramNode>();
         foreach (PatchGroup group in groups)
         {
-            if (!IsUnfolded(group))
+            if (!ShowsModules(group))
             {
                 string key = GroupKey(group.Key);
                 (int gc, double gy) = positions[key];

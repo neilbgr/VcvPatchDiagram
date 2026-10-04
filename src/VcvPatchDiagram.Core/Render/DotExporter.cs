@@ -55,6 +55,7 @@ public static class DotExporter
         Catalog.Role.Mixer => "#7a52b3",
         Catalog.Role.Effect => "#b0479a",
         Catalog.Role.Monitor => "#9a958a",
+        Catalog.Role.Performance => "#138a8a",
         _ => "#6b6b70",
     };
 

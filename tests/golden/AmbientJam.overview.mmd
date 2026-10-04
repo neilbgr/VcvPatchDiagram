@@ -1,6 +1,6 @@
 flowchart LR
-  subgraph b0["External control (MIDI, host)"]
-    n_g_external["MIDI / host in<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::io
+  subgraph b0["Performance (MIDI, host, played live)"]
+    n_g_external["Played live<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::performance
   end
   subgraph b1["Time & sequencing"]
     n_g_time["Sequencing<br/>Clkd, ADDR-SEQ"]:::time
@@ -40,4 +40,5 @@ flowchart LR
   classDef mixer stroke:#7a52b3,stroke-width:2px
   classDef effect stroke:#b0479a,stroke-width:2px
   classDef io stroke:#6b6b70,stroke-width:2px
+  classDef performance stroke:#138a8a,stroke-width:2px
   classDef monitor stroke:#9a958a,stroke-width:1px,stroke-dasharray:2 3

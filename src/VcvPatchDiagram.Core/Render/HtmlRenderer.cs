@@ -60,6 +60,7 @@ public static class HtmlRenderer
             <span class="role-modifier"><span class="swatch" style="--c: var(--role-color)"></span> modifier</span>
             <span class="role-effect"><span class="swatch" style="--c: var(--role-color)"></span> effect</span>
             <span class="role-mixer"><span class="swatch" style="--c: var(--role-color)"></span> mixer</span>
+            <span class="role-performance"><span class="swatch" style="--c: var(--role-color)"></span> performance</span>
             <span class="role-io"><span class="swatch" style="--c: var(--role-color)"></span> I/O</span>
             <span class="role-monitor"><span class="swatch" style="--c: var(--role-color)"></span> monitor</span>
           </div>

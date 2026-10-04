@@ -6,7 +6,7 @@ namespace VcvPatchDiagram.Core.Analysis;
 /// <summary>Horizontal bands of the diagram, top to bottom: the order a patch is explained in, reversed.</summary>
 public enum Band
 {
-    /// <summary>Host MIDI/CV/audio inputs: what the player (or the DAW) sends into the patch, and what relays it (keyboard zones…).</summary>
+    /// <summary>Performance: host MIDI/CV/audio inputs and controls played live (pads, joystick): what the musician (or the DAW) sends into the patch, and what relays it (keyboard zones…).</summary>
     External,
     Time,
     Pitch,

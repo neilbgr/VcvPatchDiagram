@@ -137,6 +137,31 @@ public class AnalyzerTests
         Assert.Equal(new Dictionary<long, long> { [2] = 1, [3] = 1 }, baseOf);
     }
 
+    [Theory]
+    [InlineData(null, Role.Performance, Band.External)]
+    [InlineData("Core/MIDIToCVInterface", Role.Performance, Band.External)]
+    [InlineData("AmbientModules/LunarSequencer", Role.Time, Band.Time)]
+    public void PadsArePerformanceUnlessAnotherModulePlaysThem(string? driver, Role role, Band band)
+    {
+        List<PatchModule> modules = new List<PatchModule>
+        {
+            new PatchModule(1, "AmbientModules", "LunarPads", 0, 0),
+            new PatchModule(2, "Fundamental", "ADSR", 10, 0),
+        };
+        List<PatchCable> cables = new List<PatchCable> { new PatchCable(1, new PortRef(1, 0), new PortRef(2, 4), "#52beff") };
+        if (driver is not null)
+        {
+            string[] key = driver.Split('/');
+            modules.Add(new PatchModule(3, key[0], key[1], 20, 0));
+            cables.Add(new PatchCable(2, new PortRef(3, 1), new PortRef(1, 0), "#52beff"));
+        }
+
+        PatchAnalysis pads = PatchAnalyzer.CreateDefault().Analyze(new PatchDocument("2.6.6", modules, cables));
+
+        Assert.Equal(role, pads.Module(1).Role);
+        Assert.Equal(band, pads.Module(1).Band);
+    }
+
     [Fact]
     public void LunarVoicesAreSourcesEvenWithAMiscoloredCable()
     {

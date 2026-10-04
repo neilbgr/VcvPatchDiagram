@@ -19,6 +19,9 @@ public enum Role
     Mixer,
     /// <summary>Host audio/MIDI interfaces: the patch's link with the outside world.</summary>
     Io,
+    /// <summary>Controls the musician plays live (on-screen pads, joystick…): from the outside world when played with the
+    /// mouse or driven by MIDI, a time/control utility when another module of the patch drives them.</summary>
+    Performance,
     /// <summary>Scopes, meters, displays: they watch signals but make no sound.</summary>
     Monitor,
 }

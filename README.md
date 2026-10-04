@@ -18,7 +18,7 @@ Here is the folded overview of a small ambient patch, exported to Mermaid (GitHu
 
 ```mermaid
 flowchart LR
-  subgraph b0["External control (MIDI, host)"]
+  subgraph b0["Performance (MIDI, host, played live)"]
     n_g_external["MIDI / host in<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::io
   end
   subgraph b1["Time & sequencing"]
@@ -65,7 +65,7 @@ From top to bottom:
 
 | Band | Contains |
 |---|---|
-| External control | Host MIDI, MIDI-to-CV, keyboard zones and pads fed by MIDI |
+| Performance | what the musician plays: Host MIDI, MIDI-to-CV, on-screen pads and joysticks played with the mouse, keyboard zones and pads fed by MIDI. A pad or joystick driven by another module of the patch (a sequencer, an LFO) moves to the band of what it then does |
 | Time & sequencing | clocks, sequencers, gate/trigger logic |
 | Pitch | quantizers, pitch processing |
 | Modulation | LFOs, envelopes, random, slew… shared by several voices |

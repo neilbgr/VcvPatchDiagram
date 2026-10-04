@@ -1,4 +1,4 @@
-﻿/* Shared by the SVG/HTML exporters and the Blazor app. Colors are tokens, redefined for dark mode. */
+/* Shared by the SVG/HTML exporters and the Blazor app. Colors are tokens, redefined for dark mode. */
 .vpd-root {
   --vpd-bg: #f6f5f2;
   --vpd-panel: #ffffff;
@@ -19,6 +19,7 @@
   --vpd-role-mixer: #7a52b3;
   --vpd-role-effect: #b0479a;
   --vpd-role-io: #6b6b70;
+  --vpd-role-performance: #138a8a;
   --vpd-role-monitor: #9a958a;
   color: var(--vpd-ink);
   background: var(--vpd-bg);
@@ -45,6 +46,8 @@
     --vpd-role-mixer: #b48cff;
     --vpd-role-effect: #ff7ad1;
     --vpd-role-io: #9a9aa2;
+  --vpd-role-performance: #4fd1c5;
+    --vpd-role-performance: #4fd1c5;
     --vpd-role-monitor: #6f6c66;
   }
 }
@@ -68,6 +71,7 @@
   --vpd-role-mixer: #b48cff;
   --vpd-role-effect: #ff7ad1;
   --vpd-role-io: #9a9aa2;
+  --vpd-role-performance: #4fd1c5;
   --vpd-role-monitor: #6f6c66;
 }
 
@@ -100,6 +104,7 @@
 .role-mixer { --role-color: var(--vpd-role-mixer); }
 .role-effect { --role-color: var(--vpd-role-effect); }
 .role-io { --role-color: var(--vpd-role-io); }
+.role-performance { --role-color: var(--vpd-role-performance); }
 .role-monitor { --role-color: var(--vpd-role-monitor); }
 .vpd-node .watch circle { fill: var(--vpd-panel); stroke: var(--vpd-role-monitor); stroke-width: 1.5; }
 .vpd-node .watch text { font-size: 11px; }

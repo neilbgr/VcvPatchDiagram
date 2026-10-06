@@ -54,6 +54,7 @@
   "MindMeldModular/MixMasterJr": "Mixer",
   "SurgeXTRack/SurgeXTVCF": "Modifier",
   "SurgeXTRack/SurgeXTWaveshaper": "Modifier",
+  "unless_modules/pianoid": "Performance",
   "Valley/Plateau": "Effect",
   "Venom/Knob5": "Controller"
 }

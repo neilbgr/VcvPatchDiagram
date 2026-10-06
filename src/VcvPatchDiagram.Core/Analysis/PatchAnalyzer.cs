@@ -106,8 +106,8 @@ public sealed class PatchAnalyzer
             // Ports are named on the module they're on (an expander's prefixed with its name), the cable then attaches to the base.
             PatchModule fromModule = byId[original.From.ModuleId];
             PatchModule toModule = byId[original.To.ModuleId];
-            string fromPort = PortOn(fromModule, ports.OutputName(fromModule.Plugin, fromModule.Model, original.From.PortId), baseOf);
-            string toPort = PortOn(toModule, ports.InputName(toModule.Plugin, toModule.Model, original.To.PortId), baseOf);
+            string fromPort = PortOn(fromModule, MidiLearn.Name(fromModule, original.From.PortId, ports.OutputName(fromModule.Plugin, fromModule.Model, original.From.PortId)), baseOf);
+            string toPort = PortOn(toModule, MidiLearn.Name(toModule, original.To.PortId, ports.InputName(toModule.Plugin, toModule.Model, original.To.PortId)), baseOf);
             PatchCable cable = original with
             {
                 From = original.From with { ModuleId = baseOf.GetValueOrDefault(original.From.ModuleId, original.From.ModuleId) },
@@ -152,6 +152,8 @@ public sealed class PatchAnalyzer
 
     /// <summary>
     /// Roles that depend on the patch:
+    ///  - a performance module that sends nothing out only shows what it receives (a piano keyboard lighting the notes
+    ///    played): it's a display;
     ///  - an I/O or performance module with inputs and outputs (keyboard zones, MIDI pads, on-screen pads, joystick…) relays
     ///    the outside world only when everything it receives comes from the outside (Host MIDI, the musician or another
     ///    relay); otherwise another module plays it and it's a pitch/time/control utility;
@@ -165,6 +167,10 @@ public sealed class PatchAnalyzer
         foreach (PatchModule module in shown.Where(m => roleById[m.Id] == Role.Monitor && HasOutputs(m.Id)))
         {
             roleById[module.Id] = Role.Controller;
+        }
+        foreach (PatchModule module in shown.Where(m => roleById[m.Id] == Role.Performance && !HasOutputs(m.Id)))
+        {
+            roleById[module.Id] = Role.Monitor;
         }
 
         bool Outer(long id) => roleById[id] is Role.Io or Role.Performance && HasOutputs(id);

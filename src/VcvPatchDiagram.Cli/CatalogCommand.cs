@@ -2,7 +2,10 @@
 
 namespace VcvPatchDiagram.Cli;
 
-/// <summary>"catalog build": scans every plugin under a Cardinal "plugins" folder and writes catalog/ports.json.</summary>
+/// <summary>
+/// "catalog build": scans every plugin under a Cardinal "plugins" folder and writes catalog/ports.json.
+/// Rack's own Core plugin (MIDI, audio interfaces) lives next to it, in src/Rack: its manifest is Core.json.
+/// </summary>
 internal static class CatalogCommand
 {
     public static int Build(string pluginsDir, string outputPath, string? reportPath)
@@ -16,10 +19,14 @@ internal static class CatalogCommand
         Dictionary<string, ModuleInfo> all = new Dictionary<string, ModuleInfo>(StringComparer.Ordinal);
         List<string> problems = new List<string>();
 
-        foreach (string pluginDir in Directory.GetDirectories(pluginsDir).OrderBy(d => d, StringComparer.Ordinal))
+        string rackDir = Path.Combine(pluginsDir, "..", "src", "Rack");
+        IEnumerable<(string Manifest, string Sources)> plugins = Directory.GetDirectories(pluginsDir)
+            .OrderBy(d => d, StringComparer.Ordinal)
+            .Select(d => (Path.Combine(d, "plugin.json"), Path.Combine(d, "src")))
+            .Prepend((Path.Combine(rackDir, "Core.json"), Path.Combine(rackDir, "src", "core")));
+        foreach ((string manifestPath, string sourceDir) in plugins)
         {
-            string manifestPath = Path.Combine(pluginDir, "plugin.json");
-            string sourceDir = Path.Combine(pluginDir, "src");
+            string pluginDir = Path.GetDirectoryName(manifestPath)!;
             if (!File.Exists(manifestPath) || !Directory.Exists(sourceDir))
             {
                 continue;

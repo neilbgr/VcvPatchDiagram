@@ -31,6 +31,76 @@
       "Out 8"
     ]
   },
+  "Core/AudioInterface": {
+    "inputs": [
+      "To device out 1",
+      "To device out 2",
+      "To device out 3",
+      "To device out 4",
+      "To device out 5",
+      "To device out 6",
+      "To device out 7",
+      "To device out 8"
+    ],
+    "outputs": [
+      "From device in 1",
+      "From device in 2",
+      "From device in 3",
+      "From device in 4",
+      "From device in 5",
+      "From device in 6",
+      "From device in 7",
+      "From device in 8"
+    ]
+  },
+  "Core/AudioInterface16": {
+    "inputs": [
+      "To device out 1",
+      "To device out 2",
+      "To device out 3",
+      "To device out 4",
+      "To device out 5",
+      "To device out 6",
+      "To device out 7",
+      "To device out 8",
+      "To device out 9",
+      "To device out 10",
+      "To device out 11",
+      "To device out 12",
+      "To device out 13",
+      "To device out 14",
+      "To device out 15",
+      "To device out 16"
+    ],
+    "outputs": [
+      "From device in 1",
+      "From device in 2",
+      "From device in 3",
+      "From device in 4",
+      "From device in 5",
+      "From device in 6",
+      "From device in 7",
+      "From device in 8",
+      "From device in 9",
+      "From device in 10",
+      "From device in 11",
+      "From device in 12",
+      "From device in 13",
+      "From device in 14",
+      "From device in 15",
+      "From device in 16"
+    ]
+  },
+  "Core/AudioInterface2": {
+    "inputs": [
+      "To device out 1",
+      "To device out 2"
+    ],
+    "outputs": [
+      "From device in 1",
+      "From device in 2"
+    ]
+  },
   "MindMeldModular/AuxExpanderJr": {
     "inputs": [
       "Return A L",

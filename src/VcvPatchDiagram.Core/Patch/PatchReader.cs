@@ -76,6 +76,8 @@ public static class PatchReader
                 Params = parameters,
                 LeftModuleId = module["leftModuleId"]?.GetValue<long>(),
                 RightModuleId = module["rightModuleId"]?.GetValue<long>(),
+                LearnedNotes = Integers(module["data"]?["notes"]),
+                LearnedCcs = Integers(module["data"]?["ccs"]),
             });
         }
 
@@ -98,6 +100,9 @@ public static class PatchReader
 
         return new PatchDocument(root["version"]?.GetValue<string>(), modules, cables);
     }
+
+    private static List<int> Integers(JsonNode? node) =>
+        node is JsonArray array ? array.Select(n => n is JsonValue v && v.TryGetValue(out int i) ? i : -1).ToList() : new List<int>();
 
     /// <summary>Strips a leading "./" (or repeated ones), matching tar writers that emit paths relative to "./".</summary>
     private static string NormalizeEntryName(string name)

@@ -11483,6 +11483,263 @@
       "Audio"
     ]
   },
+  "Core/AudioInterface": {
+    "name": "Audio 8",
+    "tags": [
+      "External"
+    ],
+    "inputs": [
+      "To \u0022device output 1\u0022",
+      "To \u0022device output 2\u0022",
+      "To \u0022device output 3\u0022",
+      "To \u0022device output 4\u0022",
+      "To \u0022device output 5\u0022",
+      "To \u0022device output 6\u0022",
+      "To \u0022device output 7\u0022",
+      "To \u0022device output 8\u0022"
+    ],
+    "outputs": [
+      "From \u0022device input 1\u0022",
+      "From \u0022device input 2\u0022",
+      "From \u0022device input 3\u0022",
+      "From \u0022device input 4\u0022",
+      "From \u0022device input 5\u0022",
+      "From \u0022device input 6\u0022",
+      "From \u0022device input 7\u0022",
+      "From \u0022device input 8\u0022"
+    ]
+  },
+  "Core/AudioInterface16": {
+    "name": "Audio 16",
+    "tags": [
+      "External"
+    ],
+    "inputs": [
+      "To \u0022device output 1\u0022",
+      "To \u0022device output 2\u0022",
+      "To \u0022device output 3\u0022",
+      "To \u0022device output 4\u0022",
+      "To \u0022device output 5\u0022",
+      "To \u0022device output 6\u0022",
+      "To \u0022device output 7\u0022",
+      "To \u0022device output 8\u0022",
+      "To \u0022device output 9\u0022",
+      "To \u0022device output 10\u0022",
+      "To \u0022device output 11\u0022",
+      "To \u0022device output 12\u0022",
+      "To \u0022device output 13\u0022",
+      "To \u0022device output 14\u0022",
+      "To \u0022device output 15\u0022",
+      "To \u0022device output 16\u0022"
+    ],
+    "outputs": [
+      "From \u0022device input 1\u0022",
+      "From \u0022device input 2\u0022",
+      "From \u0022device input 3\u0022",
+      "From \u0022device input 4\u0022",
+      "From \u0022device input 5\u0022",
+      "From \u0022device input 6\u0022",
+      "From \u0022device input 7\u0022",
+      "From \u0022device input 8\u0022",
+      "From \u0022device input 9\u0022",
+      "From \u0022device input 10\u0022",
+      "From \u0022device input 11\u0022",
+      "From \u0022device input 12\u0022",
+      "From \u0022device input 13\u0022",
+      "From \u0022device input 14\u0022",
+      "From \u0022device input 15\u0022",
+      "From \u0022device input 16\u0022"
+    ]
+  },
+  "Core/AudioInterface2": {
+    "name": "Audio 2",
+    "tags": [
+      "External"
+    ],
+    "inputs": [
+      "To \u0022device output 1\u0022",
+      "To \u0022device output 2\u0022"
+    ],
+    "outputs": [
+      "From \u0022device input 1\u0022",
+      "From \u0022device input 2\u0022"
+    ]
+  },
+  "Core/Blank": {
+    "name": "Blank",
+    "tags": [
+      "Blank"
+    ],
+    "inputs": [],
+    "outputs": []
+  },
+  "Core/CV-CC": {
+    "name": "CV to MIDI CC",
+    "tags": [
+      "External",
+      "MIDI"
+    ],
+    "inputs": [
+      "Cell 1",
+      "Cell 2",
+      "Cell 3",
+      "Cell 4",
+      "Cell 5",
+      "Cell 6",
+      "Cell 7",
+      "Cell 8",
+      "Cell 9",
+      "Cell 10",
+      "Cell 11",
+      "Cell 12",
+      "Cell 13",
+      "Cell 14",
+      "Cell 15",
+      "Cell 16"
+    ],
+    "outputs": []
+  },
+  "Core/CV-Gate": {
+    "name": "Gate to MIDI",
+    "tags": [
+      "External",
+      "MIDI"
+    ],
+    "inputs": [
+      "Cell 1",
+      "Cell 2",
+      "Cell 3",
+      "Cell 4",
+      "Cell 5",
+      "Cell 6",
+      "Cell 7",
+      "Cell 8",
+      "Cell 9",
+      "Cell 10",
+      "Cell 11",
+      "Cell 12",
+      "Cell 13",
+      "Cell 14",
+      "Cell 15",
+      "Cell 16"
+    ],
+    "outputs": []
+  },
+  "Core/CV-MIDI": {
+    "name": "CV to MIDI",
+    "tags": [
+      "External",
+      "MIDI",
+      "Polyphonic"
+    ],
+    "inputs": [
+      "1V/octave pitch",
+      "Gate",
+      "Velocity",
+      "Aftertouch",
+      "Pitch wheel",
+      "Mod wheel",
+      "Clock",
+      "Volume",
+      "Pan",
+      "Start trigger",
+      "Stop trigger",
+      "Continue trigger"
+    ],
+    "outputs": []
+  },
+  "Core/MIDI-Map": {
+    "name": "MIDI Map",
+    "tags": [
+      "External",
+      "MIDI"
+    ],
+    "inputs": [],
+    "outputs": []
+  },
+  "Core/MIDICCToCVInterface": {
+    "name": "MIDI CC to CV",
+    "tags": [
+      "External",
+      "MIDI"
+    ],
+    "inputs": [],
+    "outputs": [
+      "Cell 1",
+      "Cell 2",
+      "Cell 3",
+      "Cell 4",
+      "Cell 5",
+      "Cell 6",
+      "Cell 7",
+      "Cell 8",
+      "Cell 9",
+      "Cell 10",
+      "Cell 11",
+      "Cell 12",
+      "Cell 13",
+      "Cell 14",
+      "Cell 15",
+      "Cell 16"
+    ]
+  },
+  "Core/MIDIToCVInterface": {
+    "name": "MIDI to CV",
+    "tags": [
+      "External",
+      "MIDI",
+      "Polyphonic"
+    ],
+    "inputs": [],
+    "outputs": [
+      "1V/octave pitch",
+      "Gate",
+      "Velocity",
+      "Aftertouch",
+      "Pitch wheel",
+      "Mod wheel",
+      "Retrigger",
+      "Clock",
+      "Clock divider",
+      "Start trigger",
+      "Stop trigger",
+      "Continue trigger"
+    ]
+  },
+  "Core/MIDITriggerToCVInterface": {
+    "name": "MIDI to Gate",
+    "tags": [
+      "External",
+      "MIDI"
+    ],
+    "inputs": [],
+    "outputs": [
+      "Gate 1",
+      "Gate 2",
+      "Gate 3",
+      "Gate 4",
+      "Gate 5",
+      "Gate 6",
+      "Gate 7",
+      "Gate 8",
+      "Gate 9",
+      "Gate 10",
+      "Gate 11",
+      "Gate 12",
+      "Gate 13",
+      "Gate 14",
+      "Gate 15",
+      "Gate 16"
+    ]
+  },
+  "Core/Notes": {
+    "name": "Notes",
+    "tags": [
+      "Blank"
+    ],
+    "inputs": [],
+    "outputs": []
+  },
   "CosineKitty-Sapphire/Chaops": {
     "name": "Chaops",
     "tags": [

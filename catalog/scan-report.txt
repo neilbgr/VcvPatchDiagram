@@ -1,3 +1,5 @@
+Core/Blank: struct 'BlankModule' has no resolvable InputIds/OutputIds enum
+Core/Notes: struct 'NotesModule' has no resolvable InputIds/OutputIds enum
 AmbientModules/Blank: struct 'Blank' has no resolvable InputIds/OutputIds enum
 AnimatedCircuits/ACFolding: no createModel<...>("ACFolding") registration found
 AnimatedCircuits/ACLFold: no createModel<...>("ACLFold") registration found

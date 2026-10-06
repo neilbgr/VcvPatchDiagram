@@ -53,7 +53,7 @@ public class AnalyzerTests
     [Fact]
     public void NamesSurgeModulationInputsByTheKnobsTheyMove()
     {
-        AnalyzedCable cc4 = analysis.Cables.Single(c => analysis.Module(c.Cable.From.ModuleId).Title == "Host MIDI CC" && c.FromPort == "Cell 4");
+        AnalyzedCable cc4 = analysis.Cables.Single(c => analysis.Module(c.Cable.From.ModuleId).Title == "Host MIDI CC" && c.FromPort == "Cell 4 · CC 60");
 
         Assert.Equal("Mod 3 → Frequency +40%, Pre-Filter Gain +7%", cc4.ToPort);
         Assert.Equal(new[] { "Frequency", "Pre-Filter Gain" }, cc4.Routes.Select(r => r.Target));
@@ -160,6 +160,55 @@ public class AnalyzerTests
 
         Assert.Equal(role, pads.Module(1).Role);
         Assert.Equal(band, pads.Module(1).Band);
+    }
+
+    [Fact]
+    public void APianoKeyboardIsPlayedLiveOrOnlyShowsTheNotes()
+    {
+        List<PatchModule> modules = new List<PatchModule>
+        {
+            new PatchModule(1, "Core", "MIDIToCVInterface", 0, 0),
+            new PatchModule(2, "unless_modules", "pianoid", 10, 0),
+            new PatchModule(3, "Fundamental", "VCO", 20, 0),
+        };
+        PatchCable midiIn = new PatchCable(1, new PortRef(1, 0), new PortRef(2, 0), "#ffd452");
+        PatchCable played = new PatchCable(2, new PortRef(2, 0), new PortRef(3, 0), "#ffd452");
+        PatchAnalyzer analyzer = PatchAnalyzer.CreateDefault();
+
+        AnalyzedModule player = analyzer.Analyze(new PatchDocument("2.6.6", modules, new[] { midiIn, played })).Module(2);
+        AnalyzedModule display = analyzer.Analyze(new PatchDocument("2.6.6", modules, new[] { midiIn })).Module(2);
+
+        Assert.Equal((Role.Performance, Band.External), (player.Role, player.Band));
+        Assert.Equal((Role.Monitor, Band.Monitor), (display.Role, display.Band));
+    }
+
+    [Fact]
+    public void MidiGateAndCcPortsAreNamedByTheirLearnedNoteAndController()
+    {
+        List<string> ports = analysis.Cables.Select(c => c.FromPort).ToList();
+
+        Assert.Contains("Gate 13 · A2", ports);
+        Assert.Contains("Gate 7 · G#2", ports);
+        Assert.Contains("Cell 1 · CC 61", ports);
+        Assert.Contains("Cell 4 · CC 60", ports);
+    }
+
+    [Theory]
+    [InlineData("Core", "MIDITriggerToCVInterface", 0, "Gate 1", "Gate 1 · C4")]
+    [InlineData("Core", "MIDICCToCVInterface", 1, "Cell 2", "Cell 2 · CC 74 (cutoff)")]
+    [InlineData("Core", "CV-Gate", 0, "Cell 1", "Cell 1 · C4")]
+    [InlineData("Cardinal", "HostMIDICC", 2, "Cell 3", "Cell 3")]
+    [InlineData("Cardinal", "HostMIDICC", 16, "Channel pressure", "Channel pressure")]
+    [InlineData("Bogaudio", "Bogaudio-ADSR", 0, "Gate 1", "Gate 1")]
+    public void LearnedMidiNumbersNameTheCells(string plugin, string model, int index, string port, string expected)
+    {
+        PatchModule module = new PatchModule(1, plugin, model, 0, 0)
+        {
+            LearnedNotes = model.Contains("CC", StringComparison.Ordinal) ? Array.Empty<int>() : new[] { 60 },
+            LearnedCcs = model.Contains("CC", StringComparison.Ordinal) ? new[] { 1, 74, -1 } : Array.Empty<int>(),
+        };
+
+        Assert.Equal(expected, MidiLearn.Name(module, index, port));
     }
 
     [Fact]

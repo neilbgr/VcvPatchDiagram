@@ -12,6 +12,11 @@ public sealed record PatchModule(long Id, string Plugin, string Model, int Colum
     public long? LeftModuleId { get; init; }
 
     public long? RightModuleId { get; init; }
+
+    /// <summary>MIDI note (gate modules) or controller number (CC modules) learned by each cell, -1 when unassigned.</summary>
+    public IReadOnlyList<int> LearnedNotes { get; init; } = Array.Empty<int>();
+
+    public IReadOnlyList<int> LearnedCcs { get; init; } = Array.Empty<int>();
 }
 
 /// <summary>A port on a module: Output ports are cable sources, Input ports are cable destinations.</summary>

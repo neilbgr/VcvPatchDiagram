@@ -44,3 +44,10 @@ public static class Icons
         _ => "M2 6 H14 M8 2 V10",
     };
 }
+/// <summary>"Open elsewhere" arrow out of a square, in a 10 × 10 box: the link to a module's VCV Library page.</summary>
+public static class LibraryIcon
+{
+    public const double Size = 10;
+
+    public const string Path = "M4 1 H1 V9 H9 V6 M6 1 H9 V4 M9 1 L4.5 5.5";
+}

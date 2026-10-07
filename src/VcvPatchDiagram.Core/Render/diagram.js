@@ -1,4 +1,4 @@
-// Interactivity for the static HTML export (a snapshot: folding/unfolding happens in the Blazor app, in C#).
+﻿// Interactivity for the static HTML export (a snapshot: folding/unfolding happens in the Blazor app, in C#).
 (function () {
   const root = document.querySelector('.vpd-root');
   if (!root) return;
@@ -55,5 +55,8 @@
     n.addEventListener('mouseenter', () => { highlight(new Set([n.dataset.id])); });
     n.addEventListener('mouseleave', () => { highlight(null); });
   });
+
+  // Library links: the panel screenshot is fetched only when a link is hovered, then kept (and missing ones remembered).
+  window.vpdLibraryPreview(root);
 
 })();

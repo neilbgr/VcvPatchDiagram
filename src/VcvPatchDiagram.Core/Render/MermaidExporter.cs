@@ -47,6 +47,11 @@ public static class MermaidExporter
         }
         mmd.AppendLine(string.Join(Environment.NewLine, linkStyles));
 
+        foreach (DiagramNode node in layout.Nodes.Where(n => n.LibraryKey is not null))
+        {
+            mmd.AppendLine($"  click {Id(node.Key)} href \"{Catalog.VcvLibrary.PageUrl(node.LibraryKey!)}\" _blank");
+        }
+
         mmd.AppendLine("  classDef time stroke:#2f74c4,stroke-width:2px");
         mmd.AppendLine("  classDef pitch stroke:#b97d00,stroke-width:2px");
         mmd.AppendLine("  classDef controller stroke:#2c9457,stroke-width:2px");

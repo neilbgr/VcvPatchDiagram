@@ -58,7 +58,7 @@ static int Render(string[] args)
         "all" => PatchDiagram.GroupKeys(analysis),
         _ => unfoldOption.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(),
     };
-    string content = PatchDiagram.Export(PatchDiagram.Layout(analysis, title, unfolded, showMonitors: args.Contains("--scopes"), functionNames: args.Contains("--functions"), portTabs: !args.Contains("--no-ports")), format);
+    string content = PatchDiagram.Export(PatchDiagram.Layout(analysis, title, unfolded, showMonitors: args.Contains("--scopes"), functionNames: args.Contains("--functions"), portTabs: !args.Contains("--no-ports"), libraryLinks: !args.Contains("--no-links")), format);
     output ??= Path.ChangeExtension(Path.GetFileName(path), PatchDiagram.Extension(format));
     File.WriteAllText(output, content);
     Console.WriteLine($"{format} → {output}");

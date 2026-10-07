@@ -96,6 +96,7 @@ Inspired by the diagrams of the YouTube channel *MonoTrail Tech Talk*:
 - **Port tabs**: where a cable plugs into a box, a small tab in the cable's color names the port (`V/oct`, `Gate`, `Cutoff`, `CC 74`, `A2`…). You see what a cable acts on without reading anything along it. Long names are shortened; hover a tab for the full name. Off with "port names" (web app) or `--no-ports` (CLI).
 - **Trunks**: cables leaving the same output share one exit, one line and their first turn, then branch towards their targets, like a mult.
 - **Function icons**: each module box shows what it does with a small drawing (waveform for an oscillator, cutoff slope for a filter, ADSR outline for an envelope…), and its function in the subtitle. With "function names" (web app) or `--functions` (CLI), the function becomes the title (`FILTER #1`, `ENVELOPE #2`) and the module name goes under it.
+- **VCV Library links**: a small ↗ icon on each module box opens its page on [library.vcvrack.com](https://library.vcvrack.com), to find the module in Rack or Cardinal. Hovering the icon shows the module's panel. The screenshot is fetched only then, kept for the rest of the session and cached by the browser; a module the Library doesn't have is remembered and never asked for again. Cardinal-only modules get no icon. Off with "library links" (web app) or `--no-links` (CLI).
 - **Legend**: an exported `.svg` carries its own legend (the signals and roles it shows), so it reads on its own once shared.
 
 ### Cables, by signal type
@@ -225,6 +226,7 @@ dotnet run --project src/VcvPatchDiagram.Cli -- <command>
 | `… --scopes` | Show scopes and displays as badges |
 | `… --functions` | Title boxes by function (`FILTER #1`) |
 | `… --no-ports` | No port tabs on the box edges |
+| `… --no-links` | No VCV Library links on the module boxes |
 | `vcvdiagram catalog build --src <Cardinal/plugins>` | Regenerate the port catalog (see below) |
 
 Windows paths are accepted under WSL (`"C:\Users\me\Documents\patch.vcv"` is read from `/mnt/c/...`). Patch files are only read, never modified.

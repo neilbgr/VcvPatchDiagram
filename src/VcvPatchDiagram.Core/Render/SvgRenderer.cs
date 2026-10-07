@@ -82,7 +82,14 @@ public static class SvgRenderer
             {
                 svg.Append(Invariant($"<path class=\"icon\" transform=\"translate({IconX(node):0.#} {IconY(node):0.#})\" d=\"{Icons.Path(function)}\"/>"));
             }
-            svg.Append(Invariant($"<text class=\"subtitle\" x=\"{node.X + 14:0.#}\" y=\"{node.Y + 36:0.#}\">{Escape(Fit(NodeSubtitle(node), 30))}</text>"));
+            svg.Append(Invariant($"<text class=\"subtitle\" x=\"{node.X + 14:0.#}\" y=\"{node.Y + 36:0.#}\">{Escape(Fit(NodeSubtitle(node), SubtitleChars(node)))}</text>"));
+            if (node.LibraryKey is string library)
+            {
+                // A link of its own, so clicking the box keeps unfolding/highlighting; the preview is loaded on hover by the page script.
+                svg.Append($"<a class=\"lib\" href=\"{Escape(Catalog.VcvLibrary.PageUrl(library))}\" target=\"_blank\" rel=\"noopener\" data-library=\"{Escape(library)}\"><title>{LibraryTooltip}</title>");
+                svg.Append(Invariant($"<rect x=\"{LibraryX(node) - 2:0.#}\" y=\"{LibraryY(node) - 2:0.#}\" width=\"{LibraryIcon.Size + 4:0.#}\" height=\"{LibraryIcon.Size + 4:0.#}\" rx=\"3\"/>"));
+                svg.Append(Invariant($"<path transform=\"translate({LibraryX(node):0.#} {LibraryY(node):0.#})\" d=\"{LibraryIcon.Path}\"/></a>"));
+            }
             if (node.Watchers.Count > 0)
             {
                 svg.Append($"<g class=\"watch\"><title>{Escape(WatchTooltip(node))}</title>");
@@ -204,6 +211,16 @@ public static class SvgRenderer
     public static double IconX(DiagramNode node) => node.X + node.Width - Icons.Width - 8;
 
     public static double IconY(DiagramNode node) => node.Y + 9;
+
+    /// <summary>Room left for the subtitle: the library link sits at its end.</summary>
+    public static int SubtitleChars(DiagramNode node) => node.LibraryKey is null ? 30 : 26;
+
+    public const string LibraryTooltip = "Open in the VCV Library";
+
+    /// <summary>The library link, in the bottom right corner of the box's first row of text, under the function icon.</summary>
+    public static double LibraryX(DiagramNode node) => node.X + node.Width - LibraryIcon.Size - 10;
+
+    public static double LibraryY(DiagramNode node) => node.Y + 27;
 
     /// <summary>Shortens text to fit a box, ending with an ellipsis (full text stays in the tooltip).</summary>
     public static string Fit(string text, int maxChars) => text.Length <= maxChars ? text : text[..(maxChars - 1)].TrimEnd() + "…";

@@ -81,7 +81,16 @@
                         {
                             <path class="icon" transform="translate(@F(SvgRenderer.IconX(node)) @F(SvgRenderer.IconY(node)))" d="@Icons.Path(function)" />
                         }
-                        @Text(node.X + 14, node.Y + 36, "subtitle", SvgRenderer.Fit(SvgRenderer.NodeSubtitle(node), 30))
+                        @Text(node.X + 14, node.Y + 36, "subtitle", SvgRenderer.Fit(SvgRenderer.NodeSubtitle(node), SvgRenderer.SubtitleChars(node)))
+                        @if (node.LibraryKey is string library)
+                        {
+                            @* A link of its own: opening the Library page doesn't also unfold or select the box. *@
+                            <a class="lib" href="@VcvLibrary.PageUrl(library)" target="_blank" rel="noopener" data-library="@library" @onclick:stopPropagation="true">
+                                <title>@SvgRenderer.LibraryTooltip</title>
+                                <rect x="@F(SvgRenderer.LibraryX(node) - 2)" y="@F(SvgRenderer.LibraryY(node) - 2)" width="@F(LibraryIcon.Size + 4)" height="@F(LibraryIcon.Size + 4)" rx="3" />
+                                <path transform="translate(@F(SvgRenderer.LibraryX(node)) @F(SvgRenderer.LibraryY(node)))" d="@LibraryIcon.Path" />
+                            </a>
+                        }
                         @if (node.Watchers.Count > 0)
                         {
                             <g class="watch">
@@ -141,6 +150,7 @@
         {
             selfReference = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("vpdPanZoomDotNet", scroller, selfReference);
+            await JS.InvokeVoidAsync("vpdLibraryPreview", scroller);
         }
     }
 

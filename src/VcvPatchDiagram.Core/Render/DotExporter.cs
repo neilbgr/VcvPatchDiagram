@@ -24,7 +24,7 @@ public static class DotExporter
             foreach (DiagramNode node in members)
             {
                 string style = node.IsInsert || node.IsFolded ? (node.IsFolded ? ", style=\"rounded,filled,bold\", peripheries=2" : ", style=\"rounded,dashed,filled\"") : "";
-                dot.AppendLine($"    {Id(node.Key)} [label=\"{Quote(node.Title)}{(node.Watchers.Count > 0 ? " 👁" : "")}\\n{Quote(node.Subtitle)}\", color=\"{RoleColor(node)}\", penwidth=2{style}];");
+                dot.AppendLine($"    {Id(node.Key)} [label=\"{Quote(node.Title)}{(node.Watchers.Count > 0 ? " 👁" : "")}\\n{Quote(node.Subtitle)}\", color=\"{RoleColor(node)}\", penwidth=2{style}{Link(node)}];");
             }
             dot.AppendLine("  }");
         }
@@ -44,6 +44,10 @@ public static class DotExporter
         dot.AppendLine("}");
         return dot.ToString();
     }
+
+    /// <summary>Clickable box in SVG output (dot -Tsvg): the module's VCV Library page.</summary>
+    private static string Link(DiagramNode node) =>
+        node.LibraryKey is string key ? $", URL=\"{Catalog.VcvLibrary.PageUrl(key)}\", target=\"_blank\", tooltip=\"{SvgRenderer.LibraryTooltip}\"" : "";
 
     private static string RoleColor(DiagramNode node) => node.Role switch
     {

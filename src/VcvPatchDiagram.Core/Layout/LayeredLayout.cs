@@ -45,7 +45,8 @@ public static class LayeredLayout
     /// </param>
     /// <param name="functionNames">Title module boxes by what they do ("FILTER #1"), the module's own name going under it.</param>
     /// <param name="portTabs">Name the ports on the box edges (see <see cref="PortTabs"/>).</param>
-    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false, bool functionNames = false, bool portTabs = true)
+    /// <param name="libraryLinks">Link module boxes to their VCV Library page (see <see cref="Catalog.VcvLibrary"/>).</param>
+    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false, bool functionNames = false, bool portTabs = true, bool libraryLinks = true)
     {
         IReadOnlyList<PatchGroup> groups = PatchGrouping.Build(analysis).Where(g => g.Band != Band.Monitor).ToList();
         HashSet<long> visible = groups.SelectMany(g => g.Members).ToHashSet();
@@ -342,6 +343,7 @@ public static class LayeredLayout
                     ModuleDetails(analysis, m), columnX[mc], my, NodeWidth, heightOf[ModuleKey(id)])
                 {
                     Function = m.Function,
+                    LibraryKey = libraryLinks && Catalog.VcvLibrary.IsListed(m.Plugin) ? Catalog.VcvLibrary.Key(m.Plugin, m.Module.Model) : null,
                 });
             }
         }

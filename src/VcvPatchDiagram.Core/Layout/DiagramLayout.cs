@@ -29,6 +29,9 @@ public sealed record DiagramNode(
     /// <summary>What the module does (drawn as an icon); null for a folded group.</summary>
     public ModuleFunction? Function { get; init; }
 
+    /// <summary>"plugin/model" of a module listed in the VCV Library, to link its page; null for folded groups and Cardinal-only modules.</summary>
+    public string? LibraryKey { get; init; }
+
     /// <summary>Port names on the box edges, where cables plug in.</summary>
     public IReadOnlyList<PortTab> Tabs { get; init; } = Array.Empty<PortTab>();
 

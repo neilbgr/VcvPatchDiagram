@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @using System.Text.Json
 @inject IJSRuntime JS
 @inject HttpClient Http
@@ -54,6 +54,7 @@
                 <div class="group"><label><input type="checkbox" @bind="showIntents" /> intents on every cable</label></div>
                 <div class="group"><label><input type="checkbox" checked="@portTabs" @onchange="e => TogglePortTabs((bool)e.Value!)" /> port names</label></div>
                 <div class="group"><label><input type="checkbox" checked="@functionNames" @onchange="e => ToggleFunctionNames((bool)e.Value!)" /> function names</label></div>
+                <div class="group"><label title="A link to each module's VCV Library page; hover it to see the panel"><input type="checkbox" checked="@libraryLinks" @onchange="e => ToggleLibraryLinks((bool)e.Value!)" /> library links</label></div>
                 @* Only offered when the patch has scopes or displays: otherwise the box would do nothing. *@
                 @if (MonitorCount > 0)
                 {
@@ -116,6 +117,7 @@
     private bool showMonitors;
     private bool functionNames;
     private bool portTabs = true;
+    private bool libraryLinks = true;
 
     private string StorageKey => $"vpd-intents:{fileTitle}";
 
@@ -175,9 +177,15 @@
         }
     }
 
-    private void Relayout() => diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors, functionNames, portTabs);
+    private void Relayout() => diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors, functionNames, portTabs, libraryLinks);
 
     private int MonitorCount => analysis?.Modules.Count(m => m.Band == Band.Monitor) ?? 0;
+
+    private void ToggleLibraryLinks(bool on)
+    {
+        libraryLinks = on;
+        Relayout();
+    }
 
     private void TogglePortTabs(bool on)
     {

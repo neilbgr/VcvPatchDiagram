@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="ZstdSharp.Port" Version="0.8.8" />
@@ -11,6 +11,7 @@
     <EmbeddedResource Include="Render\diagram.css" LogicalName="render.diagram.css" />
     <EmbeddedResource Include="Render\diagram.js" LogicalName="render.diagram.js" />
     <EmbeddedResource Include="Render\panzoom.js" LogicalName="render.panzoom.js" />
+    <EmbeddedResource Include="Render\library.js" LogicalName="render.library.js" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using VcvPatchDiagram.Core;
 using VcvPatchDiagram.Core.Analysis;
+using VcvPatchDiagram.Core.Catalog;
 using VcvPatchDiagram.Core.Layout;
 
 namespace VcvPatchDiagram.Tests;
@@ -117,6 +118,41 @@ public class ExportTests
         Assert.Equal("L", audioIn.Text);
         Assert.EndsWith($"H {vcf.X - audioIn.Width - LayeredLayout.ArrowLength:0.#}", fromPulse.Path);
         Assert.Contains(layout.Nodes.Single(n => n.Title == "Host MIDI").Tabs, t => t.Output && t.Text == "V/oct");
+    }
+
+    [Fact]
+    public void LibraryLinksAreBuiltFromPluginAndModelSlugs()
+    {
+        Assert.Equal("https://library.vcvrack.com/AmbientModules/LunarFilter", VcvLibrary.PageUrl("AmbientModules/LunarFilter"));
+        Assert.Equal("https://library.vcvrack.com/screenshots/200/Fundamental/VCF.webp", VcvLibrary.ScreenshotUrl("Fundamental/VCF", 200));
+        Assert.Equal("https://library.vcvrack.com/Some%20Plugin/A%26B", VcvLibrary.PageUrl("Some Plugin/A&B"));
+        Assert.False(VcvLibrary.IsListed("Cardinal"));
+        Assert.True(VcvLibrary.IsListed("Fundamental"));
+    }
+
+    [Fact]
+    public void ModuleBoxesLinkToTheirLibraryPage()
+    {
+        DiagramNode vcf = layout.Nodes.Single(n => n.Title == "VCF #1");
+        string svg = PatchDiagram.Export(layout, DiagramFormat.Svg);
+
+        Assert.Equal("SurgeXTRack/SurgeXTVCF", vcf.LibraryKey);
+        Assert.Contains("<a class=\"lib\" href=\"https://library.vcvrack.com/SurgeXTRack/SurgeXTVCF\"", svg);
+        // Cardinal-only modules have no page, folded groups are no single module.
+        Assert.Null(layout.Nodes.Single(n => n.Title == "Host MIDI").LibraryKey);
+        Assert.All(overview.Nodes.Where(n => n.IsFolded), n => Assert.Null(n.LibraryKey));
+        Assert.All(PatchDiagram.Layout(analysis, "Ambient Jam", PatchDiagram.GroupKeys(analysis), libraryLinks: false).Nodes, n => Assert.Null(n.LibraryKey));
+    }
+
+    [Fact]
+    public void PanelPreviewsAreOnlyFetchedOnHover()
+    {
+        string html = PatchDiagram.Export(layout, DiagramFormat.Html);
+        string markup = html[..html.IndexOf("<script>", StringComparison.Ordinal)];
+
+        Assert.Contains("data-library=\"SurgeXTRack/SurgeXTVCF\"", markup);
+        Assert.DoesNotContain("screenshots/", markup);
+        Assert.Contains("vpdLibraryPreview", html);
     }
 
     [Fact]

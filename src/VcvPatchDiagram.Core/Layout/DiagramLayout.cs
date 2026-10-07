@@ -43,6 +43,11 @@ public sealed record DiagramEdge(
     double LabelX,
     double LabelY)
 {
+    private const int labelMaxChars = 36;
+
+    /// <summary>The intent as drawn on the cable: long ones are shortened, the tooltip keeps them whole.</summary>
+    public string Label => Intent.Length <= labelMaxChars ? Intent : Intent[..(labelMaxChars - 1)].TrimEnd() + "…";
+
     /// <summary>Teaching layer: audio first, then pitch, modulation, and gate/trig/clock last.</summary>
     public string Layer => Signal switch
     {

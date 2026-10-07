@@ -123,6 +123,8 @@
 .vpd-edge .feedback-tag { font-size: 10px; fill: var(--sig-color); paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; }
 .vpd-edge .label { font-size: 11px; paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; display: none; }
 .vpd-edge .hit { stroke: transparent; stroke-width: 10; }
+/* Labels are drawn over everything but let the mouse reach the cable or box under them. */
+.vpd-labels { pointer-events: none; }
 .vpd-marker-audio { fill: var(--vpd-audio); }
 .vpd-marker-pitch { fill: var(--vpd-pitch); }
 .vpd-marker-cv { fill: var(--vpd-modulation); }

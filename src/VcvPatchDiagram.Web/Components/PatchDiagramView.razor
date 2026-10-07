@@ -51,14 +51,6 @@
                         <title>@SvgRenderer.EdgeTooltip(edge)</title>
                         <path class="hit" d="@edge.Path" />
                         <path d="@edge.Path" marker-end="url(#vpd-arrow-@key)" />
-                        @if (edge.Intent.Length > 0)
-                        {
-                            @Text(edge.LabelX, SvgRenderer.IntentY(edge), "label", edge.Intent, "middle")
-                        }
-                        @if (edge.IsFeedback)
-                        {
-                            @Text(edge.LabelX, edge.LabelY + SvgRenderer.FeedbackTagOffset, "feedback-tag", SvgRenderer.FeedbackTag, "middle")
-                        }
                     </g>
                 }
             </g>
@@ -85,6 +77,23 @@
                                 <circle cx="@F(node.X + node.Width - 2)" cy="@F(node.Y + 2)" r="10" />
                                 @Text(node.X + node.Width - 2, node.Y + 6, null, "👁", "middle")
                             </g>
+                        }
+                    </g>
+                }
+            </g>
+
+            @* Labels last, over every cable and box, with their cable's classes so layers and hover still apply. *@
+            <g class="vpd-labels">
+                @foreach (DiagramEdge edge in Layout.Edges.Where(e => e.Intent.Length > 0 || e.IsFeedback))
+                {
+                    <g class="@SvgRenderer.EdgeClass(edge) @EdgeState(edge)">
+                        @if (edge.Intent.Length > 0)
+                        {
+                            @Text(edge.LabelX, SvgRenderer.IntentY(edge), "label", edge.Label, "middle")
+                        }
+                        @if (edge.IsFeedback)
+                        {
+                            @Text(edge.LabelX, edge.LabelY + SvgRenderer.FeedbackTagOffset, "feedback-tag", SvgRenderer.FeedbackTag, "middle")
                         }
                     </g>
                 }

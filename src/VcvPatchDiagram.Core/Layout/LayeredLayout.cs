@@ -315,7 +315,9 @@ public static class LayeredLayout
         }
         Dictionary<string, DiagramNode> nodeByKey = nodes.ToDictionary(n => n.Key);
 
-        List<DiagramEdge> edges = DrawEdges(analysis, merged, nodeByKey, plans, levels, outY, inY, channels, intents);
+        Dictionary<string, List<LabelPlacement.Run>> runs = new Dictionary<string, List<LabelPlacement.Run>>();
+        List<DiagramEdge> edges = DrawEdges(analysis, merged, nodeByKey, plans, levels, outY, inY, channels, intents, runs);
+        edges = LabelPlacement.Place(edges, runs, nodes);
         double width = GapRight(columns - 1) + margin;
         return new DiagramLayout(title, width, y - 8 + margin, bands, nodes, edges, groups, analysis.Diagnostics);
     }
@@ -415,7 +417,8 @@ public static class LayeredLayout
         Dictionary<EdgeKey, double> outY,
         Dictionary<EdgeKey, double> inY,
         Dictionary<(EdgeKey Key, int Part), double> channels,
-        IReadOnlyDictionary<long, string>? intents)
+        IReadOnlyDictionary<long, string>? intents,
+        Dictionary<string, List<LabelPlacement.Run>> runs)
     {
         List<DiagramEdge> edges = new List<DiagramEdge>();
         foreach (IGrouping<EdgeKey, AnalyzedCable> group in merged)
@@ -439,6 +442,7 @@ public static class LayeredLayout
                 labelX = (x1 + x2) / 2;
                 labelY = y1;
                 List<double> used = new List<double>();
+                List<(double X, double Y)> corners = new List<(double, double)> { (x1, y1) };
                 for (int part = 0; part < plan.Gaps.Count; part++)
                 {
                     if (channels.TryGetValue((group.Key, part), out double channel))
@@ -448,15 +452,25 @@ public static class LayeredLayout
                         int leaving = !feedback || part == plan.Gaps.Count - 1 ? 1 : -1;
                         path += Bend(channel, ys[part], ys[part + 1], arriving, leaving);
                         used.Add(channel);
+                        corners.Add((channel, ys[part]));
+                        corners.Add((channel, ys[part + 1]));
                         labelX = channel;
                         labelY = (ys[part] + ys[part + 1]) / 2;
                     }
                 }
                 path += " H " + Num(x2);
+                corners.Add((x2, y2));
                 if (feedback)
                 {
                     labelX = (used[0] + used[^1]) / 2;
                     labelY = ys[1];
+                }
+                else
+                {
+                    runs[$"{group.Key.From}>{group.Key.To}:{group.Key.Signal}"] = corners.Zip(corners.Skip(1))
+                        .Where(p => p.First != p.Second)
+                        .Select(p => new LabelPlacement.Run(p.First.X, p.First.Y, p.Second.X, p.Second.Y))
+                        .ToList();
                 }
             }
             else

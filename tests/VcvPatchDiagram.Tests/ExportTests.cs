@@ -47,6 +47,41 @@ public class ExportTests
     }
 
     [Fact]
+    public void LabelsAreDrawnOverCablesAndBoxes()
+    {
+        string svg = PatchDiagram.Export(layout, DiagramFormat.Svg);
+        int edges = svg.IndexOf("<g class=\"vpd-edges\">", StringComparison.Ordinal);
+        int nodes = svg.IndexOf("<g class=\"vpd-nodes\">", StringComparison.Ordinal);
+        int labels = svg.IndexOf("<g class=\"vpd-labels\">", StringComparison.Ordinal);
+
+        Assert.True(edges < nodes && nodes < labels);
+        Assert.DoesNotContain("class=\"label\"", svg[edges..labels]);
+        Assert.Equal(layout.Edges.Count(e => e.Intent.Length > 0), svg[labels..].Split("class=\"label\"").Length - 1);
+    }
+
+    [Theory]
+    [InlineData("AmbientJam.vcv")]
+    [InlineData("MeditationsOnDeath.vcv")]
+    [InlineData("NotBoringDrone3.vcv")]
+    [InlineData("Solar42f16.vcv")]
+    public void LabelsDoNotCoverEachOther(string fixture)
+    {
+        PatchAnalysis patch = PatchDiagram.Analyze(File.ReadAllBytes(Fixtures.Path(fixture)));
+        DiagramLayout unfolded = PatchDiagram.Layout(patch, fixture, PatchDiagram.GroupKeys(patch));
+        List<(string Text, (double Left, double Top, double Right, double Bottom) Box)> labels = unfolded.Edges
+            .Where(e => e.Intent.Length > 0 && !e.IsFeedback)
+            .Select(e => (e.Label, LabelPlacement.Bounds(e.Label, e.LabelX, e.LabelY)))
+            .ToList();
+
+        List<string> overlaps = labels.SelectMany((a, i) => labels.Skip(i + 1)
+                .Where(b => a.Box.Left < b.Box.Right && b.Box.Left < a.Box.Right && a.Box.Top < b.Box.Bottom && b.Box.Top < a.Box.Bottom)
+                .Select(b => $"'{a.Text}' / '{b.Text}'"))
+            .ToList();
+
+        Assert.Empty(overlaps);
+    }
+
+    [Fact]
     public void CustomIntentReplacesSuggestion()
     {
         long cableId = layout.Edges.First(e => e.FromTitle == "LLFO").CableIds.Single();

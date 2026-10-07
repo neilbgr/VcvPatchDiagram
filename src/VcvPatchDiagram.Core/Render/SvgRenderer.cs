@@ -46,14 +46,6 @@ public static class SvgRenderer
             svg.Append($"<title>{Escape(EdgeTooltip(edge))}</title>");
             svg.Append($"<path class=\"hit\" d=\"{edge.Path}\"/>");
             svg.Append($"<path d=\"{edge.Path}\" marker-end=\"url(#vpd-arrow-{key})\"/>");
-            if (edge.Intent.Length > 0)
-            {
-                svg.Append(Invariant($"<text class=\"label\" x=\"{edge.LabelX:0.#}\" y=\"{IntentY(edge):0.#}\" text-anchor=\"middle\">{Escape(edge.Intent)}</text>"));
-            }
-            if (edge.IsFeedback)
-            {
-                svg.Append(Invariant($"<text class=\"feedback-tag\" x=\"{edge.LabelX:0.#}\" y=\"{edge.LabelY + FeedbackTagOffset:0.#}\" text-anchor=\"middle\">{FeedbackTag}</text>"));
-            }
             svg.Append("</g>");
         }
         svg.Append("</g>");
@@ -78,6 +70,23 @@ public static class SvgRenderer
                 svg.Append(Invariant($"<circle cx=\"{node.X + node.Width - 2:0.#}\" cy=\"{node.Y + 2:0.#}\" r=\"10\"/>"));
                 svg.Append(Invariant($"<text x=\"{node.X + node.Width - 2:0.#}\" y=\"{node.Y + 6:0.#}\" text-anchor=\"middle\">👁</text>"));
                 svg.Append("</g>");
+            }
+            svg.Append("</g>");
+        }
+        svg.Append("</g>");
+
+        // Labels last, over every cable and box. Each keeps its cable's classes and ends, so layers and hover still apply.
+        svg.Append("<g class=\"vpd-labels\">");
+        foreach (DiagramEdge edge in layout.Edges.Where(e => e.Intent.Length > 0 || e.IsFeedback))
+        {
+            svg.Append($"<g class=\"{EdgeClass(edge)}\" data-from=\"{edge.From}\" data-to=\"{edge.To}\">");
+            if (edge.Intent.Length > 0)
+            {
+                svg.Append(Invariant($"<text class=\"label\" x=\"{edge.LabelX:0.#}\" y=\"{IntentY(edge):0.#}\" text-anchor=\"middle\">{Escape(edge.Label)}</text>"));
+            }
+            if (edge.IsFeedback)
+            {
+                svg.Append(Invariant($"<text class=\"feedback-tag\" x=\"{edge.LabelX:0.#}\" y=\"{edge.LabelY + FeedbackTagOffset:0.#}\" text-anchor=\"middle\">{FeedbackTag}</text>"));
             }
             svg.Append("</g>");
         }

@@ -20,6 +20,8 @@
   "Bogaudio/Bogaudio-LLFO": "Controller",
   "Bogaudio/Bogaudio-LVCO": "Source",
   "Bogaudio/Bogaudio-Mix4": "Mixer",
+  "Bogaudio/Bogaudio-PolyCon8": "Controller",
+  "Bogaudio/Bogaudio-Pressor": "Modifier",
   "Bogaudio/Bogaudio-Pulse": "Source",
   "Bogaudio/Bogaudio-SampleHold": "Controller",
   "Bogaudio/Bogaudio-Slew": "Controller",
@@ -33,12 +35,14 @@
   "Cardinal/HostMIDIMap": "Io",
   "Cardinal/HostParameters": "Io",
   "Cardinal/HostTime": "Io",
+  "Cardinal/Ildaeil": "Effect",
   "Core/AudioInterface": "Io",
   "Core/AudioInterface16": "Io",
   "Core/AudioInterface2": "Io",
   "Core/MIDICCToCVInterface": "Io",
   "Core/MIDIToCVInterface": "Io",
   "Core/MIDITriggerToCVInterface": "Io",
+  "Fundamental/8vert": "Controller",
   "Fundamental/ADSR": "Controller",
   "Fundamental/Quantizer": "Pitch",
   "Fundamental/Random": "Controller",
@@ -54,7 +58,7 @@
   "MindMeldModular/MixMasterJr": "Mixer",
   "SurgeXTRack/SurgeXTVCF": "Modifier",
   "SurgeXTRack/SurgeXTWaveshaper": "Modifier",
-  "unless_modules/pianoid": "Performance",
   "Valley/Plateau": "Effect",
-  "Venom/Knob5": "Controller"
+  "Venom/Knob5": "Controller",
+  "unless_modules/pianoid": "Performance"
 }

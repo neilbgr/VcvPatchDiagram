@@ -16,6 +16,25 @@ public class PatchReaderTests
     }
 
     [Fact]
+    public void ReadsModulesWhoseDataIsNotAnObject()
+    {
+        string json = """
+            {
+              "modules": [
+                { "id": 1, "plugin": "Cardinal", "model": "Ildaeil", "data": "<?xml version='1.0'?><CARLA-PROJECT/>" },
+                { "id": 2, "plugin": "Cardinal", "model": "HostMIDIGate", "data": { "notes": [36, -1] } }
+              ],
+              "cables": []
+            }
+            """;
+
+        PatchDocument patch = PatchReader.Read(Encoding.UTF8.GetBytes(json));
+
+        Assert.Empty(patch.Module(1).LearnedNotes);
+        Assert.Equal(new[] { 36, -1 }, patch.Module(2).LearnedNotes);
+    }
+
+    [Fact]
     public void ReadsRawJsonPatch()
     {
         string json = """

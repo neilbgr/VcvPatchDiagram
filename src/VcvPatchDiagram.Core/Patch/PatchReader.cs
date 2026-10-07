@@ -76,8 +76,9 @@ public static class PatchReader
                 Params = parameters,
                 LeftModuleId = module["leftModuleId"]?.GetValue<long>(),
                 RightModuleId = module["rightModuleId"]?.GetValue<long>(),
-                LearnedNotes = Integers(module["data"]?["notes"]),
-                LearnedCcs = Integers(module["data"]?["ccs"]),
+                // A module's data is its own: an object for most, a string for some (Ildaeil keeps a Carla XML project).
+                LearnedNotes = Integers((module["data"] as JsonObject)?["notes"]),
+                LearnedCcs = Integers((module["data"] as JsonObject)?["ccs"]),
             });
         }
 

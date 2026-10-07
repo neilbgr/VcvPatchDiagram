@@ -1,35 +1,35 @@
 flowchart LR
   subgraph b0["Performance (MIDI, host, played live)"]
-    n_m2["Host MIDI<br/>Cardinal"]:::io
-    n_m6218505374262194["Host MIDI CC<br/>Cardinal"]:::io
-    n_m3225582266994716["Host MIDI Gate<br/>Cardinal"]:::io
+    n_m2["Host MIDI<br/>Cardinal · MIDI"]:::io
+    n_m6218505374262194["Host MIDI CC<br/>Cardinal · MIDI"]:::io
+    n_m3225582266994716["Host MIDI Gate<br/>Cardinal · MIDI"]:::io
   end
   subgraph b1["Time & sequencing"]
-    n_m1647006434782107["Clkd<br/>ImpromptuModular"]:::time
-    n_m5442970283678664["ADDR-SEQ<br/>Bogaudio + ASX"]:::time
+    n_m1647006434782107["Clkd<br/>ImpromptuModular · clock"]:::time
+    n_m5442970283678664["ADDR-SEQ<br/>Bogaudio + ASX · sequencer"]:::time
   end
   subgraph b2["Voice 1: LVCO ← ADDR-SEQ"]
-    n_m8599156609620611["ADSR #3<br/>Bogaudio"]:::controller
-    n_m2846238014348274["Quantizer<br/>Fundamental"]:::pitch
-    n_m7521774204900965["LVCO<br/>Bogaudio"]:::source
-    n_m7411897278716254["VCF #2<br/>SurgeXTRack"]:::modifier
+    n_m8599156609620611["ADSR #3<br/>Bogaudio · envelope"]:::controller
+    n_m2846238014348274["Quantizer<br/>Fundamental · quantizer"]:::pitch
+    n_m7521774204900965["LVCO<br/>Bogaudio · oscillator"]:::source
+    n_m7411897278716254["VCF #2<br/>SurgeXTRack · filter"]:::modifier
   end
   subgraph b3["Voice 2: PULSE ← Host MIDI"]
-    n_m3898654702126135["SLEW<br/>Bogaudio"]:::controller
-    n_m5152299461796515["LLFO<br/>Bogaudio"]:::controller
-    n_m4235470771947441["PULSE<br/>Bogaudio"]:::source
-    n_m2208446996781428["ADSR #1<br/>Fundamental"]:::controller
-    n_m6726411345220971["ADSR #2<br/>Fundamental"]:::controller
-    n_m6452162562716294["VCF #1<br/>SurgeXTRack"]:::modifier
-    n_m8188053117264690["Waveshaper<br/>SurgeXTRack"]:::modifier
-    n_m4817828098405391["EQ<br/>Bogaudio"]:::modifier
+    n_m3898654702126135["SLEW<br/>Bogaudio · slew"]:::controller
+    n_m5152299461796515["LLFO<br/>Bogaudio · LFO"]:::controller
+    n_m4235470771947441["PULSE<br/>Bogaudio · oscillator"]:::source
+    n_m2208446996781428["ADSR #1<br/>Fundamental · envelope"]:::controller
+    n_m6726411345220971["ADSR #2<br/>Fundamental · envelope"]:::controller
+    n_m6452162562716294["VCF #1<br/>SurgeXTRack · filter"]:::modifier
+    n_m8188053117264690["Waveshaper<br/>SurgeXTRack · waveshaper"]:::modifier
+    n_m4817828098405391["EQ<br/>Bogaudio · EQ"]:::modifier
   end
   subgraph b4["Mix & effects"]
-    n_m2629565538426473["Random<br/>Fundamental"]:::controller
-    n_m1105006806367356["MIX4<br/>Bogaudio"]:::mixer
-    n_m3951164105101658["Plateau<br/>Valley"]:::effect
-    n_m2112618335105631["Delay Plus Stereo Fx<br/>AS"]:::effect
-    n_m1["Audio 2<br/>Cardinal"]:::io
+    n_m2629565538426473["Random<br/>Fundamental · random"]:::controller
+    n_m1105006806367356["MIX4<br/>Bogaudio · mixer"]:::mixer
+    n_m3951164105101658["Plateau<br/>Valley · reverb"]:::effect
+    n_m2112618335105631["Delay Plus Stereo Fx<br/>AS · delay"]:::effect
+    n_m1["Audio 2<br/>Cardinal · audio I/O"]:::io
   end
   n_m8599156609620611 -->|"ADSR moves pre-filter gain & frequency"| n_m7411897278716254
   n_m7521774204900965 ==>|"audio"| n_m7411897278716254

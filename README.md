@@ -26,7 +26,7 @@ Here is the folded overview of a small ambient patch, exported to Mermaid (GitHu
 ```mermaid
 flowchart LR
   subgraph b0["Performance (MIDI, host, played live)"]
-    n_g_external["MIDI / host in<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::io
+    n_g_external["Played live<br/>Host MIDI, Host MIDI CC, Host MIDI Gate"]:::performance
   end
   subgraph b1["Time & sequencing"]
     n_g_time["Sequencing<br/>Clkd, ADDR-SEQ"]:::time
@@ -59,9 +59,15 @@ flowchart LR
   linkStyle 8 stroke:#b97d00
   linkStyle 9 stroke:#d64545
   classDef time stroke:#2f74c4,stroke-width:2px
+  classDef pitch stroke:#b97d00,stroke-width:2px
+  classDef controller stroke:#2c9457,stroke-width:2px
   classDef source stroke:#d64545,stroke-width:2px
+  classDef modifier stroke:#c2611f,stroke-width:2px
   classDef mixer stroke:#7a52b3,stroke-width:2px
+  classDef effect stroke:#b0479a,stroke-width:2px
   classDef io stroke:#6b6b70,stroke-width:2px
+  classDef performance stroke:#138a8a,stroke-width:2px
+  classDef monitor stroke:#9a958a,stroke-width:1px,stroke-dasharray:2 3
 ```
 
 The HTML page and the web app draw the same thing with more detail: orthogonal "metro map" lines, layers you switch on one by one, and boxes you unfold.
@@ -82,6 +88,15 @@ From top to bottom:
 ### Columns, by signal path
 
 Each box is placed by the longest signal path that leads to it, so the patch reads **left to right**, from control to sound.
+
+### Boxes and ports
+
+Inspired by the diagrams of the YouTube channel *MonoTrail Tech Talk*:
+
+- **Port tabs**: where a cable plugs into a box, a small tab in the cable's color names the port (`V/oct`, `Gate`, `Cutoff`, `CC 74`, `A2`…). You see what a cable acts on without reading anything along it. Long names are shortened; hover a tab for the full name. Off with "port names" (web app) or `--no-ports` (CLI).
+- **Trunks**: cables leaving the same output share one exit, one line and their first turn, then branch towards their targets, like a mult.
+- **Function icons**: each module box shows what it does with a small drawing (waveform for an oscillator, cutoff slope for a filter, ADSR outline for an envelope…), and its function in the subtitle. With "function names" (web app) or `--functions` (CLI), the function becomes the title (`FILTER #1`, `ENVELOPE #2`) and the module name goes under it.
+- **Legend**: an exported `.svg` carries its own legend (the signals and roles it shows), so it reads on its own once shared.
 
 ### Cables, by signal type
 
@@ -182,6 +197,7 @@ Open http://localhost:5016 and drop a `.vcv` file (or add `?sample=AmbientJam` t
 
 - unfold/fold boxes, or use **Overview** / **Unfold all**;
 - step through the layers, toggle "scopes & displays" (offered when the patch has some);
+- switch port names on the box edges and function names in the titles;
 - drag the background to pan, Ctrl + wheel to zoom;
 - hover a box to follow its cables, click a cable to edit its intent;
 - export `.html`, `.svg`, `.dot`, `.mmd` or `.json`.
@@ -207,6 +223,8 @@ dotnet run --project src/VcvPatchDiagram.Cli -- <command>
 | `vcvdiagram render <patch.vcv> -f svg\|dot\|mmd\|json [-o file]` | Other formats |
 | `… --unfold all` or `--unfold voice-1,bus` | Unfold everything, or the given groups (keys listed by `inspect`) |
 | `… --scopes` | Show scopes and displays as badges |
+| `… --functions` | Title boxes by function (`FILTER #1`) |
+| `… --no-ports` | No port tabs on the box edges |
 | `vcvdiagram catalog build --src <Cardinal/plugins>` | Regenerate the port catalog (see below) |
 
 Windows paths are accepted under WSL (`"C:\Users\me\Documents\patch.vcv"` is read from `/mnt/c/...`). Patch files are only read, never modified.

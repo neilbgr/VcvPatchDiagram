@@ -82,6 +82,55 @@ public class ExportTests
     }
 
     [Fact]
+    public void AStandaloneSvgCarriesItsLegend()
+    {
+        string svg = PatchDiagram.Export(overview, DiagramFormat.Svg);
+        string html = PatchDiagram.Export(overview, DiagramFormat.Html);
+
+        Assert.Contains("class=\"vpd-legend\"", svg);
+        Assert.Contains(">gate / trig / clock</text>", svg);
+        Assert.Contains(">performance</text>", svg);
+        Assert.DoesNotContain(">monitor</text>", svg);
+        Assert.DoesNotContain("vpd-legend\"", html);
+    }
+
+    [Theory]
+    [InlineData("1V/octave pitch", SignalType.Pitch, "V/oct")]
+    [InlineData("Filter R cutoff CV (sums onto Filter L instead when Link is on)", SignalType.Cv, "Filter R…")]
+    [InlineData("Gate 13 · A2", SignalType.Gate, "A2")]
+    [InlineData("Cell 2 · CC 74 (cutoff)", SignalType.Cv, "CC 74")]
+    [InlineData("Mod 3 → Frequency +40%, Pre-Filter Gain +7%", SignalType.Cv, "Mod 3")]
+    [InlineData("Mix Pan › Pan CV 2", SignalType.Cv, "Pan CV 2")]
+    [InlineData("Left", SignalType.Audio, "L")]
+    public void PortTabsShowShortNames(string port, SignalType signal, string expected)
+    {
+        Assert.Equal(expected, PortTabs.Short(port, signal));
+    }
+
+    [Fact]
+    public void CablesPlugIntoNamedTabs()
+    {
+        DiagramNode vcf = layout.Nodes.Single(n => n.Title == "VCF #1");
+        DiagramEdge fromPulse = layout.Edges.Single(e => e.FromTitle == "PULSE" && e.ToTitle == "VCF #1");
+        PortTab audioIn = vcf.Tabs.Single(t => !t.Output && t.Signal == SignalType.Audio);
+
+        Assert.Equal("L", audioIn.Text);
+        Assert.EndsWith($"H {vcf.X - audioIn.Width - LayeredLayout.ArrowLength:0.#}", fromPulse.Path);
+        Assert.Contains(layout.Nodes.Single(n => n.Title == "Host MIDI").Tabs, t => t.Output && t.Text == "V/oct");
+    }
+
+    [Fact]
+    public void CablesFromOnePortLeaveAsOneTrunk()
+    {
+        List<DiagramEdge> pitch = layout.Edges.Where(e => e.FromTitle == "Host MIDI" && e.Signal == SignalType.Pitch).ToList();
+        string Start(DiagramEdge e) => string.Join(" ", e.Path.Split(' ').Take(3));
+
+        Assert.True(pitch.Count >= 2);
+        Assert.Single(pitch.Select(Start).Distinct());
+        Assert.Single(layout.Nodes.Single(n => n.Title == "Host MIDI").Tabs, t => t.Output && t.Signal == SignalType.Pitch);
+    }
+
+    [Fact]
     public void CustomIntentReplacesSuggestion()
     {
         long cableId = layout.Edges.First(e => e.FromTitle == "LLFO").CableIds.Single();

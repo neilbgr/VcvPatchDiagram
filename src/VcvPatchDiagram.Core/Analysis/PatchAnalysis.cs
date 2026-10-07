@@ -29,6 +29,9 @@ public sealed record AnalyzedModule(
 {
     /// <summary>Docked expanders folded into this module (see <see cref="ExpanderChains"/>), by name.</summary>
     public IReadOnlyList<string> Expanders { get; init; } = Array.Empty<string>();
+
+    /// <summary>What it does within its role: filter, VCA, envelope, LFO…</summary>
+    public ModuleFunction Function { get; init; }
 }
 
 /// <param name="Layer">Which teaching layer shows this cable: audio, pitch, modulation or time.</param>

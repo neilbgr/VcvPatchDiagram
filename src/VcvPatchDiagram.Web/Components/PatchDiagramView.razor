@@ -66,9 +66,21 @@
                         {
                             <rect class="stack" x="@F(node.X + 4)" y="@F(node.Y + 4)" width="@F(node.Width)" height="@F(node.Height)" rx="6" />
                         }
+                        @foreach (PortTab tab in node.Tabs)
+                        {
+                            <g class="tab sig-@SvgRenderer.SignalClass(tab.Signal)">
+                                <title>@tab.Tooltip</title>
+                                <rect x="@F(SvgRenderer.TabX(node, tab))" y="@F(tab.Y - (PortTabs.Height / 2))" width="@F(tab.Width)" height="@F(PortTabs.Height)" rx="3" />
+                                @Text(SvgRenderer.TabX(node, tab) + (tab.Width / 2), tab.Y + 3.2, null, tab.Text, "middle")
+                            </g>
+                        }
                         <rect class="box" x="@F(node.X)" y="@F(node.Y)" width="@F(node.Width)" height="@F(node.Height)" rx="6" />
                         <rect class="stripe" x="@F(node.X)" y="@F(node.Y)" width="5" height="@F(node.Height)" rx="2" />
-                        @Text(node.X + 14, node.Y + 20, "title", SvgRenderer.Fit(node.Title, 21))
+                        @Text(node.X + 14, node.Y + 20, "title", SvgRenderer.Fit(node.Title, SvgRenderer.TitleChars(node)))
+                        @if (node.Function is ModuleFunction function)
+                        {
+                            <path class="icon" transform="translate(@F(SvgRenderer.IconX(node)) @F(SvgRenderer.IconY(node)))" d="@Icons.Path(function)" />
+                        }
                         @Text(node.X + 14, node.Y + 36, "subtitle", SvgRenderer.Fit(SvgRenderer.NodeSubtitle(node), 30))
                         @if (node.Watchers.Count > 0)
                         {

@@ -211,6 +211,36 @@ public class AnalyzerTests
         Assert.Equal(expected, MidiLearn.Name(module, index, port));
     }
 
+    [Theory]
+    [InlineData("VCF #1", ModuleFunction.Filter)]
+    [InlineData("ADSR #2", ModuleFunction.Envelope)]
+    [InlineData("LLFO", ModuleFunction.Lfo)]
+    [InlineData("Random", ModuleFunction.Random)]
+    [InlineData("Clkd", ModuleFunction.Clock)]
+    [InlineData("ADDR-SEQ", ModuleFunction.Sequencer)]
+    [InlineData("Quantizer", ModuleFunction.Quantizer)]
+    [InlineData("Plateau", ModuleFunction.Reverb)]
+    [InlineData("Delay Plus Stereo Fx", ModuleFunction.Delay)]
+    [InlineData("MIX4", ModuleFunction.Mixer)]
+    [InlineData("PULSE", ModuleFunction.Oscillator)]
+    [InlineData("Host MIDI", ModuleFunction.Midi)]
+    public void ModulesGetTheFunctionATeacherWouldName(string title, ModuleFunction function)
+    {
+        Assert.Equal(function, analysis.Modules.Single(m => m.Title == title).Function);
+    }
+
+    [Fact]
+    public void FunctionNamesTitleTheBoxesAndKeepTheModuleUnder()
+    {
+        DiagramLayout byFunction = PatchDiagram.Layout(analysis, "Ambient Jam", PatchDiagram.GroupKeys(analysis), functionNames: true);
+        DiagramNode filter = byFunction.Nodes.Single(n => n.ModuleId is long id && analysis.Module(id).Title == "VCF #1");
+        DiagramNode midi = byFunction.Nodes.Single(n => n.ModuleId is long id && analysis.Module(id).Title == "Host MIDI");
+
+        Assert.Equal(("FILTER #1", "VCF #1 · SurgeXTRack"), (filter.Title, filter.Subtitle));
+        Assert.Equal("Host MIDI", midi.Title);
+        Assert.Contains(byFunction.Edges, e => e.ToTitle == "VCF #1");
+    }
+
     [Fact]
     public void LunarVoicesAreSourcesEvenWithAMiscoloredCable()
     {

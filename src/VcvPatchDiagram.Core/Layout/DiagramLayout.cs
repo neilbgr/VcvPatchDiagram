@@ -25,7 +25,21 @@ public sealed record DiagramNode(
 {
     /// <summary>Scopes/displays watching a signal of this box, drawn as a badge instead of boxes and cables.</summary>
     public IReadOnlyList<string> Watchers { get; init; } = Array.Empty<string>();
+
+    /// <summary>What the module does (drawn as an icon); null for a folded group.</summary>
+    public ModuleFunction? Function { get; init; }
+
+    /// <summary>Port names on the box edges, where cables plug in.</summary>
+    public IReadOnlyList<PortTab> Tabs { get; init; } = Array.Empty<PortTab>();
+
+    /// <summary>Widest tab on each side (0 without tabs): cables start and end beyond them.</summary>
+    public double InTabsWidth => Tabs.Where(t => !t.Output).Select(t => t.Width).DefaultIfEmpty(0).Max();
+
+    public double OutTabsWidth => Tabs.Where(t => t.Output).Select(t => t.Width).DefaultIfEmpty(0).Max();
 }
+
+/// <summary>A port name on a box edge: Output on the right side, input on the left; Y is the cable's height.</summary>
+public sealed record PortTab(bool Output, double Y, double Width, string Text, SignalType Signal, string Tooltip);
 
 /// <summary>A drawn cable, or several cables of the same signal type merged between two boxes when a group is folded.</summary>
 public sealed record DiagramEdge(

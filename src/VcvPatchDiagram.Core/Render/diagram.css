@@ -95,6 +95,9 @@
 .vpd-root.interactive .vpd-node.folded { cursor: zoom-in; }
 .vpd-node .title { font-size: 13px; font-weight: 600; }
 .vpd-node .subtitle { font-size: 10.5px; fill: var(--vpd-muted); }
+.vpd-node .tab rect { fill: var(--sig-color); }
+.vpd-node .tab text { font-size: 9px; font-weight: 600; fill: var(--vpd-panel); }
+.vpd-node .icon { fill: none; stroke: var(--role-color); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .vpd-node { cursor: default; }
 .role-time { --role-color: var(--vpd-role-time); }
 .role-pitch { --role-color: var(--vpd-role-pitch); }
@@ -111,18 +114,21 @@
 
 /* Cables: thick solid = audio, colored = pitch, thin = modulation and gate / trig / clock */
 .vpd-edge path { fill: none; stroke: var(--sig-color); }
-.vpd-edge.sig-audio { --sig-color: var(--vpd-audio); }
+.sig-audio { --sig-color: var(--vpd-audio); }
 .vpd-edge.sig-audio path { stroke-width: 3.2; }
-.vpd-edge.sig-pitch { --sig-color: var(--vpd-pitch); }
+.sig-pitch { --sig-color: var(--vpd-pitch); }
 .vpd-edge.sig-pitch path { stroke-width: 2.2; }
-.vpd-edge.sig-cv { --sig-color: var(--vpd-modulation); }
+.sig-cv { --sig-color: var(--vpd-modulation); }
 .vpd-edge.sig-cv path { stroke-width: 1.5; }
-.vpd-edge.sig-gate { --sig-color: var(--vpd-gate); }
+.sig-gate { --sig-color: var(--vpd-gate); }
 .vpd-edge.sig-gate path { stroke-width: 1.5; }
 .vpd-edge.merged path:not(.hit) { stroke-width: 4; }
 .vpd-edge .feedback-tag { font-size: 10px; fill: var(--sig-color); paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; }
 .vpd-edge .label { font-size: 11px; paint-order: stroke; stroke: var(--vpd-bg); stroke-width: 4px; stroke-linejoin: round; display: none; }
 .vpd-edge .hit { stroke: transparent; stroke-width: 10; }
+/* Legend of a standalone SVG export */
+.vpd-legend text { font-size: 11px; fill: var(--vpd-muted); }
+.vpd-legend .chip { fill: var(--role-color); }
 /* Labels are drawn over everything but let the mouse reach the cable or box under them. */
 .vpd-labels { pointer-events: none; }
 .vpd-marker-audio { fill: var(--vpd-audio); }

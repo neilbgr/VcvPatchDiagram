@@ -25,8 +25,10 @@ public static class PatchDiagram
 
     /// <param name="unfolded">Groups to show in detail (see <see cref="GroupKeys"/>); none by default: the overview.</param>
     /// <param name="showMonitors">Also draw scopes and displays (hidden by default).</param>
-    public static DiagramLayout Layout(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded = null, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false) =>
-        LayeredLayout.Build(analysis, title, unfolded, intents, showMonitors);
+    /// <param name="functionNames">Title boxes by function ("FILTER #1") rather than by module name.</param>
+    /// <param name="portTabs">Name the ports on the box edges, where cables plug in (on by default).</param>
+    public static DiagramLayout Layout(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded = null, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false, bool functionNames = false, bool portTabs = true) =>
+        LayeredLayout.Build(analysis, title, unfolded, intents, showMonitors, functionNames, portTabs);
 
     /// <summary>Keys of every foldable group, e.g. to unfold everything.</summary>
     public static IReadOnlySet<string> GroupKeys(PatchAnalysis analysis) => PatchGrouping.Build(analysis).Select(g => g.Key).ToHashSet();

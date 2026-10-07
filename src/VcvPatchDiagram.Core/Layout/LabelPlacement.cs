@@ -8,7 +8,8 @@
 ///  3. elsewhere on a vertical run,
 ///  4. the start or the end of a long horizontal run,
 ///  5. anywhere else along the cable, in small steps.
-/// When no spot is free, one that only covers a box, else the one overlapping least.
+/// Longest labels go first, while there is most room. When no spot is free, one that only covers a box,
+/// else the one overlapping least.
 /// Feedback labels and insert side loops keep their place.
 /// </summary>
 public static class LabelPlacement
@@ -32,7 +33,7 @@ public static class LabelPlacement
     public static List<DiagramEdge> Place(List<DiagramEdge> edges, Dictionary<string, List<Run>> runs, IReadOnlyList<DiagramNode> nodes)
     {
         // A box, and the arrowheads entering it on its left.
-        List<Box> boxes = nodes.Select(n => new Box(n.X - LayeredLayout.ArrowLength, n.Y, n.X + n.Width, n.Y + n.Height)).ToList();
+        List<Box> boxes = nodes.Select(n => new Box(n.X - n.InTabsWidth - LayeredLayout.ArrowLength, n.Y, n.X + n.Width + n.OutTabsWidth, n.Y + n.Height)).ToList();
         List<Box> labels = new List<Box>();
         foreach (DiagramEdge edge in edges.Where(e => !Movable(e, runs)))
         {
@@ -47,7 +48,7 @@ public static class LabelPlacement
         }
 
         Dictionary<string, (double X, double Y)> spots = new Dictionary<string, (double, double)>();
-        foreach (DiagramEdge edge in edges.Where(e => Movable(e, runs)))
+        foreach (DiagramEdge edge in edges.Where(e => Movable(e, runs)).OrderByDescending(e => e.Label.Length))
         {
             List<Box> candidates = Candidates(edge, runs[edge.Key]).Select(c => LabelBox(edge.Label, c.X, c.Y)).ToList();
             double Covered(Box candidate, List<Box> others) => others.Sum(o => o.Overlap(candidate));

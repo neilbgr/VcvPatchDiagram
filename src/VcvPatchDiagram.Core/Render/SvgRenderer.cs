@@ -9,15 +9,24 @@ namespace VcvPatchDiagram.Core.Render;
 /// <summary>Draws a <see cref="DiagramLayout"/> as SVG with semantic classes (roles, signals, layers) styled by diagram.css.</summary>
 public static class SvgRenderer
 {
-    /// <param name="standalone">Embeds the stylesheet and wraps in a .vpd-root group, so the .svg file renders on its own.</param>
+    private const double legendRow = 22;
+    private const double legendCharWidth = 6.2;
+
+    /// <param name="standalone">
+    /// Embeds the stylesheet and wraps in a .vpd-root group, so the .svg file renders on its own; it then also carries
+    /// its legend at the bottom (the HTML page and the app have theirs in the toolbar).
+    /// </param>
     public static string Render(DiagramLayout layout, bool standalone)
     {
         StringBuilder svg = new StringBuilder();
-        svg.Append(Invariant($"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"vpd-svg{(standalone ? " vpd-root" : "")}\" viewBox=\"0 0 {layout.Width:0} {layout.Height:0}\" width=\"{layout.Width:0}\" height=\"{layout.Height:0}\" role=\"img\" aria-label=\"{Escape(layout.Title)}\">"));
+        List<(string Class, string Text, bool Line)> legend = standalone ? LegendItems(layout) : new List<(string, string, bool)>();
+        List<List<(string Class, string Text, bool Line)>> legendRows = WrapLegend(legend, layout.Width);
+        double height = layout.Height + (legendRows.Count * legendRow);
+        svg.Append(Invariant($"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"vpd-svg{(standalone ? " vpd-root" : "")}\" viewBox=\"0 0 {layout.Width:0} {height:0}\" width=\"{layout.Width:0}\" height=\"{height:0}\" role=\"img\" aria-label=\"{Escape(layout.Title)}\">"));
         if (standalone)
         {
             svg.Append("<style>").Append(Resources.Css).Append("</style>");
-            svg.Append(Invariant($"<rect width=\"{layout.Width:0}\" height=\"{layout.Height:0}\" style=\"fill: var(--vpd-bg)\"/>"));
+            svg.Append(Invariant($"<rect width=\"{layout.Width:0}\" height=\"{height:0}\" style=\"fill: var(--vpd-bg)\"/>"));
         }
 
         svg.Append("<defs>");
@@ -60,9 +69,19 @@ public static class SvgRenderer
                 // A second card offset behind: "there's more inside".
                 svg.Append(Invariant($"<rect class=\"stack\" x=\"{node.X + 4:0.#}\" y=\"{node.Y + 4:0.#}\" width=\"{node.Width:0.#}\" height=\"{node.Height:0.#}\" rx=\"6\"/>"));
             }
+            foreach (PortTab tab in node.Tabs)
+            {
+                svg.Append($"<g class=\"tab sig-{SignalClass(tab.Signal)}\"><title>{Escape(tab.Tooltip)}</title>");
+                svg.Append(Invariant($"<rect x=\"{TabX(node, tab):0.#}\" y=\"{tab.Y - (PortTabs.Height / 2):0.#}\" width=\"{tab.Width:0.#}\" height=\"{PortTabs.Height:0.#}\" rx=\"3\"/>"));
+                svg.Append(Invariant($"<text x=\"{TabX(node, tab) + (tab.Width / 2):0.#}\" y=\"{tab.Y + 3.2:0.#}\" text-anchor=\"middle\">{Escape(tab.Text)}</text></g>"));
+            }
             svg.Append(Invariant($"<rect class=\"box\" x=\"{node.X:0.#}\" y=\"{node.Y:0.#}\" width=\"{node.Width:0.#}\" height=\"{node.Height:0.#}\" rx=\"6\"/>"));
             svg.Append(Invariant($"<rect class=\"stripe\" x=\"{node.X:0.#}\" y=\"{node.Y:0.#}\" width=\"5\" height=\"{node.Height:0.#}\" rx=\"2\"/>"));
-            svg.Append(Invariant($"<text class=\"title\" x=\"{node.X + 14:0.#}\" y=\"{node.Y + 20:0.#}\">{Escape(Fit(node.Title, 21))}</text>"));
+            svg.Append(Invariant($"<text class=\"title\" x=\"{node.X + 14:0.#}\" y=\"{node.Y + 20:0.#}\">{Escape(Fit(node.Title, TitleChars(node)))}</text>"));
+            if (node.Function is Catalog.ModuleFunction function)
+            {
+                svg.Append(Invariant($"<path class=\"icon\" transform=\"translate({IconX(node):0.#} {IconY(node):0.#})\" d=\"{Icons.Path(function)}\"/>"));
+            }
             svg.Append(Invariant($"<text class=\"subtitle\" x=\"{node.X + 14:0.#}\" y=\"{node.Y + 36:0.#}\">{Escape(Fit(NodeSubtitle(node), 30))}</text>"));
             if (node.Watchers.Count > 0)
             {
@@ -92,8 +111,67 @@ public static class SvgRenderer
         }
         svg.Append("</g>");
 
+        AppendLegend(svg, legendRows, layout.Height);
         svg.Append("</svg>");
         return svg.ToString();
+    }
+
+    /// <summary>The signals and roles actually drawn: a line sample per signal, a color chip per role.</summary>
+    private static List<(string Class, string Text, bool Line)> LegendItems(DiagramLayout layout)
+    {
+        List<(string Class, string Text, bool Line)> items = layout.Edges
+            .Select(e => (e.Signal, e.Layer)).Distinct()
+            .OrderBy(s => DiagramLayout.Layers.ToList().IndexOf(s.Layer)).ThenBy(s => s.Signal)
+            .Select(s => ($"vpd-edge sig-{SignalClass(s.Signal)}", DiagramLayout.LayerLabel(s.Layer), true))
+            .ToList();
+        items.AddRange(Enum.GetValues<Catalog.Role>()
+            .Where(r => layout.Nodes.Any(n => n.Role == r))
+            .Select(r => ($"role-{r.ToString().ToLowerInvariant()}", RoleLabel(r), false)));
+        return items;
+    }
+
+    private static double LegendWidth((string Class, string Text, bool Line) item) => 26 + (item.Text.Length * legendCharWidth) + 18;
+
+    private static List<List<(string Class, string Text, bool Line)>> WrapLegend(List<(string Class, string Text, bool Line)> items, double width)
+    {
+        List<List<(string Class, string Text, bool Line)>> rows = new List<List<(string, string, bool)>>();
+        double x = width;
+        foreach ((string Class, string Text, bool Line) item in items)
+        {
+            if (x + LegendWidth(item) > width - 16)
+            {
+                rows.Add(new List<(string, string, bool)>());
+                x = 20;
+            }
+            rows[^1].Add(item);
+            x += LegendWidth(item);
+        }
+        return rows;
+    }
+
+    private static void AppendLegend(StringBuilder svg, List<List<(string Class, string Text, bool Line)>> rows, double top)
+    {
+        if (rows.Count == 0)
+        {
+            return;
+        }
+        svg.Append("<g class=\"vpd-legend\">");
+        for (int row = 0; row < rows.Count; row++)
+        {
+            double y = top + (row * legendRow) + 8;
+            double x = 20;
+            foreach ((string Class, string Text, bool Line) item in rows[row])
+            {
+                svg.Append($"<g class=\"{item.Class}\">");
+                svg.Append(item.Line
+                    ? Invariant($"<path d=\"M {x:0.#} {y:0.#} H {x + 20:0.#}\"/>")
+                    : Invariant($"<rect class=\"chip\" x=\"{x + 4:0.#}\" y=\"{y - 6:0.#}\" width=\"12\" height=\"12\" rx=\"3\"/>"));
+                svg.Append(Invariant($"<text x=\"{x + 26:0.#}\" y=\"{y + 4:0.#}\">{Escape(item.Text)}</text>"));
+                svg.Append("</g>");
+                x += LegendWidth(item);
+            }
+        }
+        svg.Append("</g>");
     }
 
     public static string WatchTooltip(DiagramNode node) => "Watched by:\n" + string.Join("\n", node.Watchers);
@@ -115,7 +193,17 @@ public static class SvgRenderer
     public static string NodeClass(DiagramNode node) =>
         $"vpd-node role-{node.Role.ToString().ToLowerInvariant()}{(node.IsInsert ? " insert" : "")}{(node.IsFolded ? " folded" : "")}";
 
-    public static string NodeSubtitle(DiagramNode node) => node.IsFolded ? node.Subtitle : $"{node.Subtitle} · {RoleLabel(node.Role)}";
+    public static string NodeSubtitle(DiagramNode node) => node.Subtitle;
+
+    /// <summary>Room left for the title: module boxes have their function icon in the top right corner.</summary>
+    public static int TitleChars(DiagramNode node) => node.Function is null ? 21 : 18;
+
+    /// <summary>Left edge of a port tab: against the box, outside it.</summary>
+    public static double TabX(DiagramNode node, PortTab tab) => tab.Output ? node.X + node.Width : node.X - tab.Width;
+
+    public static double IconX(DiagramNode node) => node.X + node.Width - Icons.Width - 8;
+
+    public static double IconY(DiagramNode node) => node.Y + 9;
 
     /// <summary>Shortens text to fit a box, ending with an ellipsis (full text stays in the tooltip).</summary>
     public static string Fit(string text, int maxChars) => text.Length <= maxChars ? text : text[..(maxChars - 1)].TrimEnd() + "…";

@@ -52,6 +52,8 @@
                     }
                 </div>
                 <div class="group"><label><input type="checkbox" @bind="showIntents" /> intents on every cable</label></div>
+                <div class="group"><label><input type="checkbox" checked="@portTabs" @onchange="e => TogglePortTabs((bool)e.Value!)" /> port names</label></div>
+                <div class="group"><label><input type="checkbox" checked="@functionNames" @onchange="e => ToggleFunctionNames((bool)e.Value!)" /> function names</label></div>
                 @* Only offered when the patch has scopes or displays: otherwise the box would do nothing. *@
                 @if (MonitorCount > 0)
                 {
@@ -112,6 +114,8 @@
     private Dictionary<long, string> intents = new Dictionary<long, string>();
     private HashSet<string> unfolded = new HashSet<string>();
     private bool showMonitors;
+    private bool functionNames;
+    private bool portTabs = true;
 
     private string StorageKey => $"vpd-intents:{fileTitle}";
 
@@ -171,9 +175,21 @@
         }
     }
 
-    private void Relayout() => diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors);
+    private void Relayout() => diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors, functionNames, portTabs);
 
     private int MonitorCount => analysis?.Modules.Count(m => m.Band == Band.Monitor) ?? 0;
+
+    private void TogglePortTabs(bool on)
+    {
+        portTabs = on;
+        Relayout();
+    }
+
+    private void ToggleFunctionNames(bool on)
+    {
+        functionNames = on;
+        Relayout();
+    }
 
     private void ToggleMonitors(bool show)
     {

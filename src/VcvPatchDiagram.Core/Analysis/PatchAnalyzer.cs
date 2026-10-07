@@ -85,6 +85,7 @@ public sealed class PatchAnalyzer
             modules.Add(new AnalyzedModule(module, titles[module.Id], module.Plugin, roleById[module.Id], band, voice, host)
             {
                 Expanders = baseOf.Where(kv => kv.Value == module.Id).Select(kv => ExpanderName(byId[kv.Key])).ToList(),
+                Function = ModuleFunctions.Of(roleById[module.Id], ports.Get(module.Plugin, module.Model).Tags, module.Model, ports.Get(module.Plugin, module.Model).Name),
             });
         }
 

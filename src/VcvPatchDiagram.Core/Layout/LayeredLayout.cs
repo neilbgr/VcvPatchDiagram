@@ -43,7 +43,9 @@ public static class LayeredLayout
     /// Scopes and displays explain nothing about the sound and can tap the flow anywhere: they never get a box,
     /// and when asked for they show as a badge on the box whose signal they watch.
     /// </param>
-    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false)
+    /// <param name="functionNames">Title module boxes by what they do ("FILTER #1"), the module's own name going under it.</param>
+    /// <param name="portTabs">Name the ports on the box edges (see <see cref="PortTabs"/>).</param>
+    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false, bool functionNames = false, bool portTabs = true)
     {
         IReadOnlyList<PatchGroup> groups = PatchGrouping.Build(analysis).Where(g => g.Band != Band.Monitor).ToList();
         HashSet<long> visible = groups.SelectMany(g => g.Members).ToHashSet();
@@ -172,9 +174,14 @@ public static class LayeredLayout
             .ToList();
         List<List<string>> order = Barycenter.Order(initial, segments, e => laneOf[e]);
 
+        // Cables leaving from the same output port(s) form a trunk: one exit on the box, one first turn, then they branch.
+        Dictionary<EdgeKey, string> trunkOf = merged.ToDictionary(
+            g => g.Key,
+            g => $"{g.Key.From}|{g.Key.Signal}|" + string.Join(",", g.Select(c => $"{c.Cable.From.ModuleId}:{c.Cable.From.PortId}").Distinct().Order(StringComparer.Ordinal)));
+
         // Box height: enough room for one arrow every portSpacing on its busiest side.
         Dictionary<string, double> heightOf = anchorOf.Keys.ToDictionary(k => k, k =>
-            Math.Max(NodeHeight, (Math.Max(merged.Count(g => g.Key.From == k), merged.Count(g => g.Key.To == k)) + 1) * portSpacing));
+            Math.Max(NodeHeight, (Math.Max(merged.Where(g => g.Key.From == k).Select(g => trunkOf[g.Key]).Distinct().Count(), merged.Count(g => g.Key.To == k)) + 1) * portSpacing));
         Dictionary<string, string> predecessorOf = segments.Where(s => trackColumn.ContainsKey(s.V)).ToDictionary(s => s.V, s => s.U);
 
         List<DiagramBand> bands = new List<DiagramBand>();
@@ -246,11 +253,15 @@ public static class LayeredLayout
         Dictionary<EdgeKey, double> inY = new Dictionary<EdgeKey, double>();
         foreach (IGrouping<string, IGrouping<EdgeKey, AnalyzedCable>> side in merged.GroupBy(g => g.Key.From))
         {
-            Spread(side.Select(g => g.Key).OrderBy(NextY).ThenBy(k => k.Signal).ToList(), positions[side.Key].Y, heightOf[side.Key], outY);
+            List<List<EdgeKey>> trunks = side.GroupBy(g => trunkOf[g.Key])
+                .Select(t => t.Select(g => g.Key).ToList())
+                .OrderBy(t => t.Average(NextY)).ThenBy(t => t[0].Signal)
+                .ToList();
+            Spread(trunks, positions[side.Key].Y, heightOf[side.Key], outY);
         }
         foreach (IGrouping<string, IGrouping<EdgeKey, AnalyzedCable>> side in merged.GroupBy(g => g.Key.To))
         {
-            Spread(side.Select(g => g.Key).OrderBy(PreviousY).ThenBy(k => k.Signal).ToList(), positions[side.Key].Y, heightOf[side.Key], inY);
+            Spread(side.Select(g => g.Key).OrderBy(PreviousY).ThenBy(k => k.Signal).Select(k => new List<EdgeKey> { k }).ToList(), positions[side.Key].Y, heightOf[side.Key], inY);
         }
         Dictionary<EdgeKey, List<double>> levels = plans.ToDictionary(
             kv => kv.Key,
@@ -273,10 +284,28 @@ public static class LayeredLayout
 
         // Each gap between two columns is as wide as its vertical runs need, so busy gaps don't squeeze lines together.
         // Gaps -1 and columns - 1, outside the first and last columns, only exist for feedback cables.
+        // Port tabs: one per cable line arriving, one per trunk leaving (cables plugged into a stacked insert's side loop
+        // have none). They take room in the gaps, next to the boxes.
+        Dictionary<EdgeKey, PortTab> inTabs = new Dictionary<EdgeKey, PortTab>();
+        Dictionary<EdgeKey, PortTab> outTabs = new Dictionary<EdgeKey, PortTab>();
+        foreach (IGrouping<EdgeKey, AnalyzedCable> edge in merged.Where(g => portTabs && plans.ContainsKey(g.Key)))
+        {
+            string arriving = PortTabs.Text(edge.Select(c => c.ToPort), edge.Key.Signal);
+            string leaving = PortTabs.Text(edge.Select(c => c.FromPort), edge.Key.Signal);
+            inTabs[edge.Key] = new PortTab(false, inY[edge.Key], PortTabs.Width(arriving), arriving, edge.Key.Signal, string.Join("\n", edge.Select(c => c.ToPort).Distinct()));
+            outTabs[edge.Key] = new PortTab(true, outY[edge.Key], PortTabs.Width(leaving), leaving, edge.Key.Signal, string.Join("\n", edge.Select(c => c.FromPort).Distinct()));
+        }
+        double MaxTab(Dictionary<EdgeKey, PortTab> tabs, Func<EdgeKey, string> box, int col) =>
+            tabs.Where(t => positions[box(t.Key)].Column == col).Select(t => t.Value.Width).DefaultIfEmpty(0).Max();
+        double OutTabs(int col) => MaxTab(outTabs, k => k.From, col);
+        double InTabs(int col) => MaxTab(inTabs, k => k.To, col);
+
+        // The first turns of a trunk's cables, when they go the same way, share one vertical run.
+        string? TrunkOf(Turn turn) => turn.Part == 0 && !plans[turn.Key].Feedback ? trunkOf[turn.Key] : null;
         double GapWidth(int gap)
         {
-            int count = turns.Count(t => t.Gap == gap);
-            double needed = gapPadding + (count * channelPitch);
+            int count = Bundles(turns.Where(t => t.Gap == gap), TrunkOf).Count;
+            double needed = gapPadding + (count * channelPitch) + OutTabs(gap) + InTabs(gap + 1);
             return gap < 0 || gap >= columns - 1 ? (count > 0 ? needed : 0) : Math.Max(minGap, needed);
         }
         List<double> columnX = new List<double> { margin + GapWidth(-1) };
@@ -286,7 +315,7 @@ public static class LayeredLayout
         }
         double GapLeft(int gap) => gap < 0 ? margin : columnX[gap] + NodeWidth;
         double GapRight(int gap) => gap + 1 < columns ? columnX[gap + 1] : GapLeft(gap) + GapWidth(gap);
-        Dictionary<(EdgeKey Key, int Part), double> channels = AssignChannels(turns, GapLeft, GapRight);
+        Dictionary<(EdgeKey Key, int Part), double> channels = AssignChannels(turns, TrunkOf, g => GapLeft(g) + OutTabs(g), g => GapRight(g) - InTabs(g + 1));
 
         List<DiagramNode> nodes = new List<DiagramNode>();
         foreach (PatchGroup group in groups)
@@ -303,20 +332,34 @@ public static class LayeredLayout
             {
                 AnalyzedModule m = analysis.Module(id);
                 (int mc, double my) = positions[ModuleKey(id)];
-                string subtitle = m.InsertOf is long host ? $"insert of {analysis.Module(host).Title}"
+                string origin = m.InsertOf is long host ? $"insert of {analysis.Module(host).Title}"
                     : m.Expanders.Count > 0 ? $"{m.Plugin} + {string.Join(", ", m.Expanders)}" : m.Plugin;
-                nodes.Add(new DiagramNode(ModuleKey(id), id, group.Key, false, m.Title, subtitle, m.Role, m.Band, m.InsertOf is not null,
-                    ModuleDetails(analysis, m), columnX[mc], my, NodeWidth, heightOf[ModuleKey(id)]));
+                // "MIDI" or "UTILITY" would say less than the module's own name: those keep it.
+                bool byFunction = functionNames && m.Function is not (Catalog.ModuleFunction.Midi or Catalog.ModuleFunction.Audio or Catalog.ModuleFunction.Utility);
+                string moduleTitle = byFunction ? FunctionTitle(m) : m.Title;
+                string subtitle = byFunction ? $"{m.Title} · {origin}" : $"{origin} · {Catalog.ModuleFunctions.Label(m.Function)}";
+                nodes.Add(new DiagramNode(ModuleKey(id), id, group.Key, false, moduleTitle, subtitle, m.Role, m.Band, m.InsertOf is not null,
+                    ModuleDetails(analysis, m), columnX[mc], my, NodeWidth, heightOf[ModuleKey(id)])
+                {
+                    Function = m.Function,
+                });
             }
         }
         if (showMonitors)
         {
             nodes = nodes.Select(n => n with { Watchers = WatchersOf(analysis, n, visible, groupOf) }).ToList();
         }
+        nodes = nodes.Select(n => n with
+        {
+            Tabs = inTabs.Where(t => t.Key.To == n.Key).Select(t => t.Value)
+                .Concat(outTabs.Where(t => t.Key.From == n.Key).Select(t => t.Value).DistinctBy(t => t.Y))
+                .ToList(),
+        }).ToList();
         Dictionary<string, DiagramNode> nodeByKey = nodes.ToDictionary(n => n.Key);
 
         Dictionary<string, List<LabelPlacement.Run>> runs = new Dictionary<string, List<LabelPlacement.Run>>();
-        List<DiagramEdge> edges = DrawEdges(analysis, merged, nodeByKey, plans, levels, outY, inY, channels, intents, runs);
+        double TabWidth(Dictionary<EdgeKey, PortTab> tabs, EdgeKey key) => tabs.TryGetValue(key, out PortTab? tab) ? tab.Width : 0;
+        List<DiagramEdge> edges = DrawEdges(analysis, merged, nodeByKey, plans, levels, outY, inY, channels, intents, runs, k => TabWidth(outTabs, k), k => TabWidth(inTabs, k));
         edges = LabelPlacement.Place(edges, runs, nodes);
         double width = GapRight(columns - 1) + margin;
         return new DiagramLayout(title, width, y - 8 + margin, bands, nodes, edges, groups, analysis.Diagnostics);
@@ -330,6 +373,13 @@ public static class LayeredLayout
                 && (node.ModuleId == c.Cable.From.ModuleId || (node.IsFolded && groupOf[c.Cable.From.ModuleId].Key == node.Group)))
             .Select(c => $"{analysis.Module(c.Cable.To.ModuleId).Title} '{c.ToPort}' ← {analysis.Module(c.Cable.From.ModuleId).Title} '{c.FromPort}'")
             .ToList();
+
+    /// <summary>"FILTER #2": the function, numbered like the module when several share a name.</summary>
+    private static string FunctionTitle(AnalyzedModule module)
+    {
+        int hash = module.Title.LastIndexOf(" #", StringComparison.Ordinal);
+        return Catalog.ModuleFunctions.Label(module.Function).ToUpperInvariant() + (hash > 0 ? module.Title[hash..] : "");
+    }
 
     public static string ModuleKey(long moduleId) => "m" + moduleId.ToString(CultureInfo.InvariantCulture);
 
@@ -418,16 +468,20 @@ public static class LayeredLayout
         Dictionary<EdgeKey, double> inY,
         Dictionary<(EdgeKey Key, int Part), double> channels,
         IReadOnlyDictionary<long, string>? intents,
-        Dictionary<string, List<LabelPlacement.Run>> runs)
+        Dictionary<string, List<LabelPlacement.Run>> runs,
+        Func<EdgeKey, double> outTab,
+        Func<EdgeKey, double> inTab)
     {
+        // Tooltips name modules as in the rack, whatever their box shows.
+        string TitleOf(DiagramNode node) => node.ModuleId is long id ? analysis.Module(id).Title : node.Title;
         List<DiagramEdge> edges = new List<DiagramEdge>();
         foreach (IGrouping<EdgeKey, AnalyzedCable> group in merged)
         {
             DiagramNode from = nodeByKey[group.Key.From];
             DiagramNode to = nodeByKey[group.Key.To];
-            double x1 = from.X + from.Width;
+            double x1 = from.X + from.Width + outTab(group.Key);
             double y1 = outY[group.Key];
-            double x2 = to.X - ArrowLength;
+            double x2 = to.X - inTab(group.Key) - ArrowLength;
             double y2 = inY[group.Key];
 
             string path;
@@ -495,7 +549,7 @@ public static class LayeredLayout
             string toPort = groupCables.Count == 1 ? firstCable.ToPort : string.Join(", ", groupCables.Select(c => $"{analysis.Module(c.Cable.To.ModuleId).Title} '{c.ToPort}'").Distinct());
             edges.Add(new DiagramEdge(
                 $"{group.Key.From}>{group.Key.To}:{group.Key.Signal}", from.Key, to.Key, groupCables.Select(c => c.Cable.Id).ToList(),
-                from.Title, fromPort, to.Title, toPort, group.Key.Signal, intent, path, labelX, labelY)
+                TitleOf(from), fromPort, TitleOf(to), toPort, group.Key.Signal, intent, path, labelX, labelY)
             {
                 IsFeedback = feedback,
             });
@@ -505,27 +559,37 @@ public static class LayeredLayout
 
     /// <summary>
     /// x of every vertical run, spread over its gap. In each gap, runs going down sit left of runs going up,
-    /// ordered so they don't cross each other.
+    /// ordered so they don't cross each other. A trunk's runs going the same way are one run, as long as the farthest.
     /// </summary>
-    private static Dictionary<(EdgeKey Key, int Part), double> AssignChannels(List<Turn> turns, Func<int, double> gapLeft, Func<int, double> gapRight)
+    private static Dictionary<(EdgeKey Key, int Part), double> AssignChannels(List<Turn> turns, Func<Turn, string?> trunkOf, Func<int, double> gapLeft, Func<int, double> gapRight)
     {
         Dictionary<(EdgeKey Key, int Part), double> channelX = new Dictionary<(EdgeKey, int), double>();
         foreach (IGrouping<int, Turn> gap in turns.GroupBy(t => t.Gap))
         {
-            List<Turn> ordered = gap
-                .OrderBy(t => t.YTo > t.YFrom ? 0 : 1)
-                .ThenBy(t => t.YTo > t.YFrom ? -t.YTo : t.YTo)
+            static bool Down(List<Turn> bundle) => bundle[0].YTo > bundle[0].YFrom;
+            List<List<Turn>> ordered = Bundles(gap, trunkOf)
+                .OrderBy(b => Down(b) ? 0 : 1)
+                .ThenBy(b => Down(b) ? -b.Max(t => t.YTo) : b.Min(t => t.YTo))
                 .ToList();
             double left = gapLeft(gap.Key) + 14;
             double right = gapRight(gap.Key) - ArrowLength - 12;
             double step = (right - left) / ordered.Count;
             for (int i = 0; i < ordered.Count; i++)
             {
-                channelX[(ordered[i].Key, ordered[i].Part)] = left + ((i + 0.5) * step);
+                foreach (Turn turn in ordered[i])
+                {
+                    channelX[(turn.Key, turn.Part)] = left + ((i + 0.5) * step);
+                }
             }
         }
         return channelX;
     }
+
+    /// <summary>Vertical runs drawn as one: a trunk's turns going the same way; every other turn on its own.</summary>
+    private static List<List<Turn>> Bundles(IEnumerable<Turn> turns, Func<Turn, string?> trunkOf) =>
+        turns.GroupBy(t => trunkOf(t) is string trunk ? $"{trunk}|{Math.Sign(t.YTo - t.YFrom)}" : $"{t.Key}|{t.Part}")
+            .Select(b => b.ToList())
+            .ToList();
 
     /// <summary>
     /// " H … Q … V … Q …": run to channel x, turn, go from fromY to toY, turn back to horizontal (rounded corners).
@@ -548,11 +612,15 @@ public static class LayeredLayout
         _ => "modulation",
     };
 
-    private static void Spread(List<EdgeKey> ordered, double top, double height, Dictionary<EdgeKey, double> target)
+    /// <summary>One port per slot, evenly spread along a box side; the cables of a slot leave or arrive at the same point.</summary>
+    private static void Spread(List<List<EdgeKey>> slots, double top, double height, Dictionary<EdgeKey, double> target)
     {
-        for (int i = 0; i < ordered.Count; i++)
+        for (int i = 0; i < slots.Count; i++)
         {
-            target[ordered[i]] = top + (height * (i + 1) / (ordered.Count + 1));
+            foreach (EdgeKey key in slots[i])
+            {
+                target[key] = top + (height * (i + 1) / (slots.Count + 1));
+            }
         }
     }
 }

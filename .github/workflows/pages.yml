@@ -1,0 +1,58 @@
+# Publishes the Blazor WebAssembly app to GitHub Pages on every push to main:
+# https://neilbgr.github.io/VcvPatchDiagram/
+name: Web app on GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push replaces a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test
+
+      - name: Publish the web app
+        run: dotnet publish src/VcvPatchDiagram.Web -c Release -o publish/web
+
+      # Pages serves the site under /VcvPatchDiagram/, not at the root; Blazor's _framework folder must
+      # not go through Jekyll; 404.html keeps links with a query string (?sample=…) working.
+      - name: Adapt for GitHub Pages
+        run: |
+          cd publish/web/wwwroot
+          sed -i 's|<base href="/" />|<base href="/VcvPatchDiagram/" />|' index.html
+          rm -f index.html.br index.html.gz
+          cp index.html 404.html
+          touch .nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/web/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

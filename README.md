@@ -12,6 +12,8 @@ It comes as:
 
 All three share one C# library, so they always draw the same diagram.
 
+**Try it online: [neilbgr.github.io/VcvPatchDiagram](https://neilbgr.github.io/VcvPatchDiagram/)**. Drop a `.vcv` file on the page, or open the sample patch. The patch is read in your browser and never uploaded.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/overview-dark.png">
   <img alt="Folded overview of a patch: performance, sequencing, two voices and the mix bus, linked by typed cables" src="docs/screenshots/overview-light.png">
@@ -272,6 +274,7 @@ catalog/                    port catalog and roles
 - Tests: `make test`. Exporter output is pinned by golden files in `tests/golden`: after an intended change, regenerate them with `UPDATE_GOLDEN=1 dotnet test` and review the diff.
 - Style: `make format` (`dotnet format`, rules in `.editorconfig`; explicit types, no `var`).
 - Screenshots (`docs/screenshots`, light and dark): rendered pages captured with a headless browser, e.g. `msedge --headless=new --blink-settings=preferredColorScheme=1 --window-size=W,H --screenshot=out.png page.html` (`=0` for dark).
+- Web app online: every push to `main` runs the tests and publishes it to GitHub Pages (`.github/workflows/pages.yml`).
 - Contributions welcome, especially entries for `catalog/roles.json` and `catalog/ports.overrides.json` for the modules you use.
 
 ## License

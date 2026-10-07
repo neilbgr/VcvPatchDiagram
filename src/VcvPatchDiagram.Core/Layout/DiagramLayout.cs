@@ -32,6 +32,12 @@ public sealed record DiagramNode(
     /// <summary>"plugin/model" of a module listed in the VCV Library, to link its page; null for folded groups and Cardinal-only modules.</summary>
     public string? LibraryKey { get; init; }
 
+    /// <summary>A folded group's modules listed in the VCV Library, for a preview of their panels (no link).</summary>
+    public IReadOnlyList<LibraryPanel> LibraryPanels { get; init; } = Array.Empty<LibraryPanel>();
+
+    /// <summary>A folded group's modules the Library has no page for (Cardinal-only), mentioned under its preview.</summary>
+    public int UnlistedCount { get; init; }
+
     /// <summary>Port names on the box edges, where cables plug in.</summary>
     public IReadOnlyList<PortTab> Tabs { get; init; } = Array.Empty<PortTab>();
 
@@ -42,6 +48,10 @@ public sealed record DiagramNode(
 }
 
 /// <summary>A port name on a box edge: Output on the right side, input on the left; Y is the cable's height.</summary>
+/// <param name="Key">"plugin/model" (see <see cref="Catalog.VcvLibrary"/>).</param>
+/// <param name="Count">How many of this module the group holds.</param>
+public sealed record LibraryPanel(string Key, int Count);
+
 public sealed record PortTab(bool Output, double Y, double Width, string Text, SignalType Signal, string Tooltip);
 
 /// <summary>A drawn cable, or several cables of the same signal type merged between two boxes when a group is folded.</summary>

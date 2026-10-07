@@ -90,6 +90,13 @@ public static class SvgRenderer
                 svg.Append(Invariant($"<rect x=\"{LibraryX(node) - 2:0.#}\" y=\"{LibraryY(node) - 2:0.#}\" width=\"{LibraryIcon.Size + 4:0.#}\" height=\"{LibraryIcon.Size + 4:0.#}\" rx=\"3\"/>"));
                 svg.Append(Invariant($"<path transform=\"translate({LibraryX(node):0.#} {LibraryY(node):0.#})\" d=\"{LibraryIcon.Path}\"/></a>"));
             }
+            else if (node.LibraryPanels.Count > 0)
+            {
+                // A folded group: no single page to open, only its modules' panels to preview on hover.
+                svg.Append($"<g class=\"lib panels\" data-panels=\"{Escape(PanelsAttribute(node))}\" data-unlisted=\"{node.UnlistedCount}\"><title>{PanelsTooltip}</title>");
+                svg.Append(Invariant($"<rect x=\"{LibraryX(node) - 2:0.#}\" y=\"{LibraryY(node) - 2:0.#}\" width=\"{LibraryIcon.Size + 4:0.#}\" height=\"{LibraryIcon.Size + 4:0.#}\" rx=\"3\"/>"));
+                svg.Append(Invariant($"<path transform=\"translate({LibraryX(node):0.#} {LibraryY(node):0.#})\" d=\"{LibraryIcon.PanelsPath}\"/></g>"));
+            }
             if (node.Watchers.Count > 0)
             {
                 svg.Append($"<g class=\"watch\"><title>{Escape(WatchTooltip(node))}</title>");
@@ -213,9 +220,14 @@ public static class SvgRenderer
     public static double IconY(DiagramNode node) => node.Y + 9;
 
     /// <summary>Room left for the subtitle: the library link sits at its end.</summary>
-    public static int SubtitleChars(DiagramNode node) => node.LibraryKey is null ? 30 : 26;
+    public static int SubtitleChars(DiagramNode node) => node.LibraryKey is null && node.LibraryPanels.Count == 0 ? 30 : 24;
 
     public const string LibraryTooltip = "Open in the VCV Library";
+
+    public const string PanelsTooltip = "The modules of this group, as panels from the VCV Library";
+
+    /// <summary>"plugin/model*count …", read by library.js (slugs have no spaces).</summary>
+    public static string PanelsAttribute(DiagramNode node) => string.Join(" ", node.LibraryPanels.Select(p => $"{p.Key}*{p.Count}"));
 
     /// <summary>The library link, in the bottom right corner of the box's first row of text, under the function icon.</summary>
     public static double LibraryX(DiagramNode node) => node.X + node.Width - LibraryIcon.Size - 10;

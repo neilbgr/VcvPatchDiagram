@@ -91,6 +91,14 @@
                                 <path transform="translate(@F(SvgRenderer.LibraryX(node)) @F(SvgRenderer.LibraryY(node)))" d="@LibraryIcon.Path" />
                             </a>
                         }
+                        else if (node.LibraryPanels.Count > 0)
+                        {
+                            <g class="lib panels" data-panels="@SvgRenderer.PanelsAttribute(node)" data-unlisted="@node.UnlistedCount">
+                                <title>@SvgRenderer.PanelsTooltip</title>
+                                <rect x="@F(SvgRenderer.LibraryX(node) - 2)" y="@F(SvgRenderer.LibraryY(node) - 2)" width="@F(LibraryIcon.Size + 4)" height="@F(LibraryIcon.Size + 4)" rx="3" />
+                                <path transform="translate(@F(SvgRenderer.LibraryX(node)) @F(SvgRenderer.LibraryY(node)))" d="@LibraryIcon.PanelsPath" />
+                            </g>
+                        }
                         @if (node.Watchers.Count > 0)
                         {
                             <g class="watch">

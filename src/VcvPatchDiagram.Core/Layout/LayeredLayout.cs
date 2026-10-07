@@ -326,7 +326,11 @@ public static class LayeredLayout
                 string key = GroupKey(group.Key);
                 (int gc, double gy) = positions[key];
                 nodes.Add(new DiagramNode(key, null, group.Key, true, FoldedTitle(group, analysis), FoldedSubtitle(group, analysis),
-                    group.Role, group.Band, false, group.Members.Select(id => analysis.Module(id).Title).ToList(), columnX[gc], gy, NodeWidth, heightOf[key]));
+                    group.Role, group.Band, false, group.Members.Select(id => analysis.Module(id).Title).ToList(), columnX[gc], gy, NodeWidth, heightOf[key])
+                {
+                    LibraryPanels = libraryLinks ? LibraryPanels(group, analysis) : Array.Empty<LibraryPanel>(),
+                    UnlistedCount = libraryLinks ? group.Members.Count(id => !Catalog.VcvLibrary.IsListed(analysis.Module(id).Plugin)) : 0,
+                });
                 continue;
             }
             foreach (long id in group.Members.Where(id => positions.ContainsKey(ModuleKey(id))))
@@ -388,6 +392,14 @@ public static class LayeredLayout
     public static string GroupKey(string group) => "g:" + group;
 
     private static long ModuleIdOf(string key) => long.Parse(key[1..], CultureInfo.InvariantCulture);
+
+    /// <summary>The distinct modules of a folded group listed in the VCV Library, in group order, with how many of each.</summary>
+    private static List<LibraryPanel> LibraryPanels(PatchGroup group, PatchAnalysis analysis) => group.Members
+        .Select(analysis.Module)
+        .Where(m => Catalog.VcvLibrary.IsListed(m.Plugin))
+        .GroupBy(m => Catalog.VcvLibrary.Key(m.Plugin, m.Module.Model))
+        .Select(g => new LibraryPanel(g.Key, g.Count()))
+        .ToList();
 
     private static string FoldedTitle(PatchGroup group, PatchAnalysis analysis)
     {

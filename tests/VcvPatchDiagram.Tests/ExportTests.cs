@@ -145,6 +145,24 @@ public class ExportTests
     }
 
     [Fact]
+    public void FoldedGroupsPreviewEachModuleOnceWithItsCount()
+    {
+        foreach (DiagramNode group in overview.Nodes.Where(n => n.IsFolded))
+        {
+            Assert.Equal(group.LibraryPanels.Select(p => p.Key).Distinct().Count(), group.LibraryPanels.Count);
+            Assert.Equal(group.Details.Count, group.LibraryPanels.Sum(p => p.Count) + group.UnlistedCount);
+        }
+        DiagramNode voice = overview.Nodes.Single(n => n.IsFolded && n.LibraryPanels.Any(p => p.Key == "Fundamental/ADSR"));
+        string svg = PatchDiagram.Export(overview, DiagramFormat.Svg);
+
+        Assert.Contains(new LibraryPanel("Fundamental/ADSR", 2), voice.LibraryPanels);
+        Assert.Contains("Fundamental/ADSR*2", svg);
+        // Host MIDI and friends are Cardinal-only: counted, not previewed.
+        Assert.Contains(overview.Nodes, n => n.IsFolded && n.UnlistedCount > 0);
+        Assert.DoesNotContain(overview.Nodes, n => n.IsFolded && n.LibraryKey is not null);
+    }
+
+    [Fact]
     public void PanelPreviewsAreOnlyFetchedOnHover()
     {
         string html = PatchDiagram.Export(layout, DiagramFormat.Html);

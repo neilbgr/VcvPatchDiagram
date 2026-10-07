@@ -50,4 +50,7 @@ public static class LibraryIcon
     public const double Size = 10;
 
     public const string Path = "M4 1 H1 V9 H9 V6 M6 1 H9 V4 M9 1 L4.5 5.5";
+
+    /// <summary>Panels side by side: a folded group's preview, which opens nothing.</summary>
+    public const string PanelsPath = "M1 1 H4 V9 H1 Z M6 1 H9 V9 H6 Z M2.5 3 V3.2 M7.5 3 V3.2";
 }

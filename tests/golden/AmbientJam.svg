@@ -114,7 +114,8 @@
 .vpd-preview figure { position: relative; margin: 0; }
 .vpd-preview .panels img { max-height: 220px; }
 .vpd-preview .count { position: absolute; top: -4px; right: -4px; min-width: 18px; padding: 1px 5px; border-radius: 9px; background: var(--vpd-ink); color: var(--vpd-panel); font-weight: 700; font-size: 11px; text-align: center; box-sizing: border-box; }
-.vpd-preview .note { margin-top: 4px; }
+/* Notes wrap to the panels' width rather than widening the card (a narrow module is 3 HP). */
+.vpd-preview .note { margin-top: 4px; white-space: normal; width: 0; min-width: 100%; }
 .vpd-node { cursor: default; }
 .role-time { --role-color: var(--vpd-role-time); }
 .role-pitch { --role-color: var(--vpd-role-pitch); }

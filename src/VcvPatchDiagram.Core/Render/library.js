@@ -97,7 +97,9 @@ window.vpdLibraryPreview = function (container) {
     if (key) {
       const img = image(key);
       if (!img) markMissing(key);
-      card.replaceChildren(...(img ? [img, note(lastPointer === 'mouse' ? 'Click to open its VCV Library page' : 'Tap again to open its VCV Library page')] : ['Not in the VCV Library']));
+      // With a finger, say how to open the page (the mouse has its pointer cursor for that).
+      const hint = lastPointer === 'mouse' ? [] : [note('Tap again to open')];
+      card.replaceChildren(...(img ? [img, ...hint] : ['Not in the VCV Library']));
     } else {
       // A group: each distinct module once, with a badge when there are several of it.
       const panels = target.dataset.panels.split(' ').filter(p => p).map(p => {

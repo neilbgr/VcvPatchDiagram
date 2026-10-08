@@ -205,6 +205,8 @@ Open http://localhost:5016 and drop a `.vcv` file (or add `?sample=AmbientJam` t
 - hover a box to follow its cables, click a cable to edit its intent;
 - export `.html`, `.svg`, `.dot`, `.mmd` or `.json`.
 
+On a phone or tablet (portrait or landscape), the diagram fills the screen and opens fitted to its width; the options fold under **Options**. Drag with a finger anywhere to pan and pinch to zoom. Tap a module box for its ports, details and VCV Library link; tap a library icon once to see the panel, twice to open the page. The theme button switches between the system theme, light and dark. The exported `.html` page pans, pinches and previews panels the same way.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/web-app-dark.png">
   <img alt="The web app: drop zone, view, layer, export and zoom controls above the diagram" src="docs/screenshots/web-app-light.png">

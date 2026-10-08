@@ -48,6 +48,15 @@ public class ExportTests
     }
 
     [Fact]
+    public void PagesDeclareTheirOwnDarkThemeSoPhonesDoNotForceTheirs()
+    {
+        string html = PatchDiagram.Export(layout, DiagramFormat.Html);
+
+        Assert.Contains("<meta name=\"color-scheme\" content=\"light dark\">", html);
+        Assert.Contains("color-scheme: light dark;", PatchDiagram.Export(layout, DiagramFormat.Svg));
+    }
+
+    [Fact]
     public void LabelsAreDrawnOverCablesAndBoxes()
     {
         string svg = PatchDiagram.Export(layout, DiagramFormat.Svg);

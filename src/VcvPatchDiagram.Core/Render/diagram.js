@@ -21,7 +21,9 @@
   const svg = root.querySelector('.vpd-svg');
   const [, , width, height] = svg.getAttribute('viewBox').split(' ').map(Number);
   const label = root.querySelector('.vpd-zoom-label');
-  const minZoom = +root.dataset.minZoom, maxZoom = +root.dataset.maxZoom;
+  // A phone: zoomed out further, and opened fitted to the width.
+  const compact = window.vpdCompact();
+  const minZoom = compact ? +root.dataset.minZoomCompact : +root.dataset.minZoom, maxZoom = +root.dataset.maxZoom;
   let zoom = 1;
   function setZoom(z) {
     zoom = Math.max(minZoom, Math.min(maxZoom, z));
@@ -34,7 +36,7 @@
     setZoom(z === '+' ? zoom * 1.15 : z === '-' ? zoom / 1.15 : z === 'fit' ? window.vpdFitZoom(scroller, width, minZoom, maxZoom) : +z);
   }));
   window.vpdPanZoom(scroller, factor => setZoom(zoom * factor));
-  setZoom(1);
+  setZoom(compact ? window.vpdFitZoom(scroller, width, minZoom, maxZoom) : 1);
 
   const edges = [...root.querySelectorAll('.vpd-edge')];
   const nodes = [...root.querySelectorAll('.vpd-node')];

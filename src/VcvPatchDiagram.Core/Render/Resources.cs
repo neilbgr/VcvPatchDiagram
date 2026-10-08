@@ -14,4 +14,7 @@ public static class Resources
     public const double MinZoom = 0.7;
 
     public const double MaxZoom = 2.0;
+
+    /// <summary>On a phone (see vpdCompact in panzoom.js): low enough to see a whole diagram, pinching in to read it.</summary>
+    public const double MinZoomCompact = 0.35;
 }

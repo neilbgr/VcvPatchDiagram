@@ -1,4 +1,4 @@
-.valid.modified:not([type=checkbox]) {
+﻿.valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
 
@@ -88,9 +88,16 @@ code {
     text-align: start;
 }
 /* Patch Diagram app */
+/* Our own light and dark themes: "only light" keeps a phone's forced dark mode off the light one (it would darken
+   the page but leave the diagram's SVG fills light); in dark mode the page is dark already. */
+:root { color-scheme: only light; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; } }
 html, body { margin: 0; }
 body { background: #f6f5f2; }
 @media (prefers-color-scheme: dark) { body { background: #16171a; } }
+/* The theme button overrides the system theme: the page around the diagram follows. */
+body:has(.vpd-root[data-theme="light"]) { background: #f6f5f2; color-scheme: light; }
+body:has(.vpd-root[data-theme="dark"]) { background: #16171a; color-scheme: dark; }
 .vpd-drop { border: 2px dashed var(--vpd-line); border-radius: 10px; padding: 24px; text-align: center; color: var(--vpd-muted); margin-bottom: 12px; }
 .vpd-drop input { margin-top: 8px; }
 .vpd-error { color: var(--vpd-audio); }
@@ -103,3 +110,19 @@ body { background: #f6f5f2; }
 .vpd-drop.compact { display: flex; gap: 10px; align-items: center; justify-content: flex-start; padding: 6px 10px; margin-bottom: 8px; }
 .vpd-drop.compact input, .vpd-drop.compact .vpd-link { margin-top: 0; }
 .vpd-drop.compact > div { display: inline; }
+.vpd-panel .close { float: right; margin: -4px -4px 0 8px; font: inherit; font-size: 18px; line-height: 1; padding: 4px 8px; border: none; background: none; color: var(--vpd-muted); cursor: pointer; }
+.vpd-panel ul { margin: 6px 0 0; padding-left: 18px; }
+.vpd-panel .lib-link { display: inline-block; margin-top: 8px; color: var(--vpd-time); }
+.vpd-options-toggle { display: none; }
+/* Desktop: the options are simply more toolbar groups. */
+.vpd-options { display: contents; }
+
+@media (max-width: 700px), (max-height: 500px) {
+  .vpd-drop.compact { flex-wrap: wrap; gap: 4px 10px; }
+  .vpd-drop.compact input { max-width: 100%; }
+  .vpd-options-toggle { display: inline-block; }
+  .vpd-options { display: none; }
+  .vpd-options.open { display: flex; flex-wrap: wrap; gap: 8px 12px; width: 100%; padding: 8px; border: 1px solid var(--vpd-line); border-radius: 8px; background: var(--vpd-panel); }
+  /* Cable intent and module details: a sheet over the bottom of the screen, not a panel under a full-screen diagram. */
+  .vpd-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0; max-height: 45dvh; overflow: auto; border-radius: 12px 12px 0 0; box-shadow: 0 -4px 16px rgb(0 0 0 / 25%); }
+}

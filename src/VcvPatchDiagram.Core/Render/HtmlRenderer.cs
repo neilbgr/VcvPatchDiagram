@@ -11,13 +11,14 @@ public static class HtmlRenderer
     {
         StringBuilder html = new StringBuilder();
         html.AppendLine("<!doctype html>");
-        html.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        html.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"color-scheme\" content=\"light dark\">");
         html.AppendLine($"<title>{WebUtility.HtmlEncode(layout.Title)}</title>");
-        html.AppendLine($"<style>body {{ margin: 0; background: #f6f5f2; }} @media (prefers-color-scheme: dark) {{ body {{ background: #16171a; }} }}\n{Resources.Css}</style>");
+        // "only light" keeps a phone's forced dark mode off our light theme (it would leave the SVG fills light).
+        html.AppendLine($"<style>:root {{ color-scheme: only light; }} body {{ margin: 0; background: #f6f5f2; }} @media (prefers-color-scheme: dark) {{ :root {{ color-scheme: dark; }} body {{ background: #16171a; }} }}\n{Resources.Css}</style>");
         html.AppendLine("</head><body>");
-        html.AppendLine(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"<div class=\"vpd-root\" data-min-zoom=\"{Resources.MinZoom}\" data-max-zoom=\"{Resources.MaxZoom}\"><div class=\"vpd-page\">"));
+        html.AppendLine(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"<div class=\"vpd-root\" data-min-zoom=\"{Resources.MinZoom}\" data-max-zoom=\"{Resources.MaxZoom}\" data-min-zoom-compact=\"{Resources.MinZoomCompact}\"><div class=\"vpd-page\">"));
         html.AppendLine($"<h1>{WebUtility.HtmlEncode(layout.Title)}</h1>");
-        html.AppendLine($"<p class=\"vpd-sub\">{layout.Groups.Sum(g => g.Members.Count)} modules in {layout.Groups.Count} groups · drag the background to move around, hover a box to follow its cables. Stacked boxes are folded groups (open the patch in the app to unfold them).</p>");
+        html.AppendLine($"<p class=\"vpd-sub\">{layout.Groups.Sum(g => g.Members.Count)} modules in {layout.Groups.Count} groups <span class=\"vpd-long\">· drag the background to move around, hover a box to follow its cables. Stacked boxes are folded groups (open the patch in the app to unfold them).</span><span class=\"vpd-short\">· pinch to zoom, tap a box to follow its cables.</span></p>");
         html.AppendLine(Toolbar());
         html.AppendLine($"<div class=\"vpd-scroll\">{SvgRenderer.Render(layout, standalone: false)}</div>");
         if (layout.Diagnostics.Count > 0)

@@ -6,7 +6,7 @@
 @* Renders a DiagramLayout as native SVG so folding, hover and cable selection are handled in C#.
    Same classes as SvgRenderer, so diagram.css styles both identically. *@
 
-<div class="@RootClass">
+<div class="@RootClass" @ref="root">
     <div class="vpd-toolbar">
         <div class="group">Zoom:
             <button title="Zoom out (or Ctrl + wheel)" @onclick="() => SetZoom(zoom / 1.15)">−</button>
@@ -15,7 +15,7 @@
             <button @onclick="() => SetZoom(1)">100%</button>
             <button title="Fit the width, without going below a readable size" @onclick="FitAsync">Fit</button>
         </div>
-        <div class="group vpd-sub">Drag the background to move around.</div>
+        <div class="group vpd-sub vpd-hint">Drag the background to move around.</div>
     </div>
     <div class="vpd-scroll" @ref="scroller">
         <svg class="vpd-svg" viewBox="0 0 @F(Layout.Width) @F(Layout.Height)" width="@F(Layout.Width * zoom)" height="@F(Layout.Height * zoom)">
@@ -85,16 +85,14 @@
                         @if (node.LibraryKey is string library)
                         {
                             @* A link of its own: opening the Library page doesn't also unfold or select the box. *@
-                            <a class="lib" href="@VcvLibrary.PageUrl(library)" target="_blank" rel="noopener" data-library="@library" @onclick:stopPropagation="true">
-                                <title>@SvgRenderer.LibraryTooltip</title>
+                            <a class="lib" href="@VcvLibrary.PageUrl(library)" target="_blank" rel="noopener" data-library="@library" aria-label="@SvgRenderer.LibraryTooltip" @onclick:stopPropagation="true">
                                 <rect x="@F(SvgRenderer.LibraryX(node) - 2)" y="@F(SvgRenderer.LibraryY(node) - 2)" width="@F(LibraryIcon.Size + 4)" height="@F(LibraryIcon.Size + 4)" rx="3" />
                                 <path transform="translate(@F(SvgRenderer.LibraryX(node)) @F(SvgRenderer.LibraryY(node)))" d="@LibraryIcon.Path" />
                             </a>
                         }
                         else if (node.LibraryPanels.Count > 0)
                         {
-                            <g class="lib panels" data-panels="@SvgRenderer.PanelsAttribute(node)" data-unlisted="@node.UnlistedCount">
-                                <title>@SvgRenderer.PanelsTooltip</title>
+                            <g class="lib panels" data-panels="@SvgRenderer.PanelsAttribute(node)" data-unlisted="@node.UnlistedCount" aria-label="@SvgRenderer.PanelsTooltip">
                                 <rect x="@F(SvgRenderer.LibraryX(node) - 2)" y="@F(SvgRenderer.LibraryY(node) - 2)" width="@F(LibraryIcon.Size + 4)" height="@F(LibraryIcon.Size + 4)" rx="3" />
                                 <path transform="translate(@F(SvgRenderer.LibraryX(node)) @F(SvgRenderer.LibraryY(node)))" d="@LibraryIcon.PanelsPath" />
                             </g>
@@ -146,7 +144,13 @@
 
     [Parameter] public EventCallback<DiagramBand> OnBandClicked { get; set; }
 
+    /// <summary>A module whose cables stay highlighted while nothing is hovered (the one tapped, on a phone).</summary>
+    [Parameter] public string? PinnedNode { get; set; }
+
+    private ElementReference root;
     private ElementReference scroller;
+    private string? hovered;
+    private double minZoom = Resources.MinZoom;
     private DotNetObjectReference<PatchDiagramView>? selfReference;
     private double zoom = 1;
     private HashSet<string> highlighted = new HashSet<string>();
@@ -159,8 +163,18 @@
             selfReference = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("vpdPanZoomDotNet", scroller, selfReference);
             await JS.InvokeVoidAsync("vpdLibraryPreview", scroller);
+            // A phone: the diagram fills the screen, fitted to its width; zoomed out further than on a desktop.
+            if (await JS.InvokeAsync<bool>("vpdCompact"))
+            {
+                minZoom = Resources.MinZoomCompact;
+                await FitAsync();
+                await JS.InvokeVoidAsync("vpdScrollIntoView", root);
+                StateHasChanged();
+            }
         }
     }
+
+    protected override void OnParametersSet() => ApplyHighlight();
 
     /// <summary>Ctrl + wheel, called from panzoom.js.</summary>
     [JSInvokable]
@@ -170,10 +184,10 @@
         StateHasChanged();
     }
 
-    private void SetZoom(double value) => zoom = Math.Clamp(value, Resources.MinZoom, Resources.MaxZoom);
+    private void SetZoom(double value) => zoom = Math.Clamp(value, minZoom, Resources.MaxZoom);
 
     private async Task FitAsync() =>
-        SetZoom(await JS.InvokeAsync<double>("vpdFitZoom", scroller, Layout.Width, Resources.MinZoom, Resources.MaxZoom));
+        SetZoom(await JS.InvokeAsync<double>("vpdFitZoom", scroller, Layout.Width, minZoom, Resources.MaxZoom));
 
     public void Dispose() => selfReference?.Dispose();
 
@@ -188,6 +202,14 @@
 
     private void Highlight(string? nodeKey)
     {
+        hovered = nodeKey;
+        ApplyHighlight();
+    }
+
+    /// <summary>The hovered module's cables, or else the pinned one's.</summary>
+    private void ApplyHighlight()
+    {
+        string? nodeKey = hovered ?? PinnedNode;
         if (nodeKey is null)
         {
             highlighted = new HashSet<string>();

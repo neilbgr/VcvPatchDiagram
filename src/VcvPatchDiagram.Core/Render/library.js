@@ -22,9 +22,26 @@ window.vpdLibraryPreview = function (container) {
   // On the body, out of the app's rendered markup; it takes the diagram's theme colors when shown.
   document.body.appendChild(card);
   let link = null, timer = 0;
+  // How the last gesture started: 'mouse', 'touch' or 'pen'.
+  let lastPointer = 'mouse';
+  // The box's own tooltip, emptied while its icon shows a preview (the browser would draw it over the preview).
+  let muted = null;
+
+  function mute(target) {
+    const title = target.closest('.vpd-node')?.querySelector(':scope > title');
+    if (!title || title.textContent === '') return;
+    muted = { title, text: title.textContent };
+    title.textContent = '';
+  }
+
+  function unmute() {
+    if (muted && muted.title.textContent === '') muted.title.textContent = muted.text;
+    muted = null;
+  }
 
   function hide() {
     clearTimeout(timer);
+    unmute();
     link = null;
     card.hidden = true;
   }
@@ -35,7 +52,9 @@ window.vpdLibraryPreview = function (container) {
     if (!link.isConnected) { hide(); return; }
     const box = link.getBoundingClientRect();
     const width = card.offsetWidth, height = card.offsetHeight;
-    const left = box.right + 8 + width <= window.innerWidth ? box.right + 8 : Math.max(4, box.left - 8 - width);
+    // Beside the icon, on its right or else its left; on a phone, across the screen.
+    const left = box.right + 8 + width <= window.innerWidth ? box.right + 8
+      : box.left - 8 - width >= 4 ? box.left - 8 - width : Math.max(4, (window.innerWidth - width) / 2);
     card.style.left = left + 'px';
     card.style.top = Math.max(4, Math.min(window.innerHeight - height - 4, box.top + (box.height / 2) - (height / 2))) + 'px';
   }
@@ -78,7 +97,7 @@ window.vpdLibraryPreview = function (container) {
     if (key) {
       const img = image(key);
       if (!img) markMissing(key);
-      card.replaceChildren(img || 'Not in the VCV Library');
+      card.replaceChildren(...(img ? [img, note(lastPointer === 'mouse' ? 'Click to open its VCV Library page' : 'Tap again to open its VCV Library page')] : ['Not in the VCV Library']));
     } else {
       // A group: each distinct module once, with a badge when there are several of it.
       const panels = target.dataset.panels.split(' ').filter(p => p).map(p => {
@@ -113,26 +132,50 @@ window.vpdLibraryPreview = function (container) {
   }
 
   function show(target) {
+    unmute();
     link = target;
+    mute(target);
     const style = getComputedStyle(container);
     ['--vpd-panel', '--vpd-muted', '--vpd-ink'].forEach(v => card.style.setProperty(v, style.getPropertyValue(v)));
     card.hidden = false;
     render(target);
   }
 
+  const iconOf = e => (e.target.closest && e.target.closest(selector)) || null;
+
   // Delegated, so it keeps working when the app re-renders the diagram. A short delay: sweeping the mouse across
   // the diagram doesn't fetch every panel it crosses.
   container.addEventListener('pointerover', e => {
-    const target = e.target.closest && e.target.closest(selector);
-    if (!target || target === link) return;
+    const target = iconOf(e);
+    if (e.pointerType !== 'mouse' || !target || target === link) return;
     clearTimeout(timer);
     timer = setTimeout(() => { if (target.isConnected) show(target); }, 250);
   });
   container.addEventListener('pointerout', e => {
-    const target = e.target.closest && e.target.closest(selector);
-    if (!target || (e.relatedTarget && target.contains(e.relatedTarget))) return;
+    const target = iconOf(e);
+    // A finger "leaves" right after every tap: only the mouse hides the preview this way.
+    if (e.pointerType !== 'mouse' || !target || (e.relatedTarget && target.contains(e.relatedTarget))) return;
     hide();
   });
   // A click (which may unfold or fold the box), a pan or a zoom: the preview no longer belongs where it is.
-  ['pointerdown', 'wheel', 'scroll'].forEach(type => container.addEventListener(type, hide, { capture: true, passive: true }));
+  // Except a second tap on the icon whose preview is shown: that one goes on (below).
+  container.addEventListener('pointerdown', e => {
+    lastPointer = e.pointerType;
+    if (!(e.pointerType !== 'mouse' && link && iconOf(e) === link)) hide();
+  }, { capture: true, passive: true });
+  ['wheel', 'scroll'].forEach(type => container.addEventListener(type, hide, { capture: true, passive: true }));
+
+  // No hover with a finger: the first tap on an icon shows its preview (and opens nothing), the second one opens the
+  // Library page, or unfolds the group for a group's icon.
+  container.addEventListener('click', e => {
+    const target = iconOf(e);
+    if (lastPointer === 'mouse' || !target) return;
+    if (target === link && !card.hidden) {
+      hide();
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    show(target);
+  }, true);
 };

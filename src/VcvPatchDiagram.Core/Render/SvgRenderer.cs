@@ -86,14 +86,14 @@ public static class SvgRenderer
             if (node.LibraryKey is string library)
             {
                 // A link of its own, so clicking the box keeps unfolding/highlighting; the preview is loaded on hover by the page script.
-                svg.Append($"<a class=\"lib\" href=\"{Escape(Catalog.VcvLibrary.PageUrl(library))}\" target=\"_blank\" rel=\"noopener\" data-library=\"{Escape(library)}\"><title>{LibraryTooltip}</title>");
+                svg.Append($"<a class=\"lib\" href=\"{Escape(Catalog.VcvLibrary.PageUrl(library))}\" target=\"_blank\" rel=\"noopener\" data-library=\"{Escape(library)}\" aria-label=\"{LibraryTooltip}\">{IconTitle(standalone, LibraryTooltip)}");
                 svg.Append(Invariant($"<rect x=\"{LibraryX(node) - 2:0.#}\" y=\"{LibraryY(node) - 2:0.#}\" width=\"{LibraryIcon.Size + 4:0.#}\" height=\"{LibraryIcon.Size + 4:0.#}\" rx=\"3\"/>"));
                 svg.Append(Invariant($"<path transform=\"translate({LibraryX(node):0.#} {LibraryY(node):0.#})\" d=\"{LibraryIcon.Path}\"/></a>"));
             }
             else if (node.LibraryPanels.Count > 0)
             {
                 // A folded group: no single page to open, only its modules' panels to preview on hover.
-                svg.Append($"<g class=\"lib panels\" data-panels=\"{Escape(PanelsAttribute(node))}\" data-unlisted=\"{node.UnlistedCount}\"><title>{PanelsTooltip}</title>");
+                svg.Append($"<g class=\"lib panels\" data-panels=\"{Escape(PanelsAttribute(node))}\" data-unlisted=\"{node.UnlistedCount}\" aria-label=\"{PanelsTooltip}\">{IconTitle(standalone, PanelsTooltip)}");
                 svg.Append(Invariant($"<rect x=\"{LibraryX(node) - 2:0.#}\" y=\"{LibraryY(node) - 2:0.#}\" width=\"{LibraryIcon.Size + 4:0.#}\" height=\"{LibraryIcon.Size + 4:0.#}\" rx=\"3\"/>"));
                 svg.Append(Invariant($"<path transform=\"translate({LibraryX(node):0.#} {LibraryY(node):0.#})\" d=\"{LibraryIcon.PanelsPath}\"/></g>"));
             }
@@ -225,6 +225,12 @@ public static class SvgRenderer
     public const string LibraryTooltip = "Open in the VCV Library";
 
     public const string PanelsTooltip = "The modules of this group, as panels from the VCV Library";
+
+    /// <summary>
+    /// A tooltip for the library icons only in a standalone .svg: pages show a preview on hover instead, and the browser's
+    /// tooltip would cover it.
+    /// </summary>
+    private static string IconTitle(bool standalone, string text) => standalone ? $"<title>{text}</title>" : "";
 
     /// <summary>"plugin/model*count …", read by library.js (slugs have no spaces).</summary>
     public static string PanelsAttribute(DiagramNode node) => string.Join(" ", node.LibraryPanels.Select(p => $"{p.Key}*{p.Count}"));

@@ -21,6 +21,8 @@
   --vpd-role-io: #6b6b70;
   --vpd-role-performance: #138a8a;
   --vpd-role-monitor: #9a958a;
+  /* Both themes are ours: mobile browsers must not force their own dark mode on top (it leaves SVG fills light). */
+  color-scheme: light dark;
   color: var(--vpd-ink);
   background: var(--vpd-bg);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -46,12 +48,13 @@
     --vpd-role-mixer: #b48cff;
     --vpd-role-effect: #ff7ad1;
     --vpd-role-io: #9a9aa2;
-  --vpd-role-performance: #4fd1c5;
     --vpd-role-performance: #4fd1c5;
     --vpd-role-monitor: #6f6c66;
   }
 }
+.vpd-root[data-theme="light"] { color-scheme: light; }
 .vpd-root[data-theme="dark"] {
+  color-scheme: dark;
   --vpd-bg: #16171a;
   --vpd-panel: #22242a;
   --vpd-ink: #ececee;
@@ -104,8 +107,8 @@
 .vpd-node .lib:hover path, .vpd-node .lib:focus path { stroke: var(--role-color); }
 .vpd-node .lib.missing { opacity: 0.35; }
 /* Panel preview shown next to a library link on hover (HTML page and app), loaded only then. */
-.vpd-preview { position: fixed; z-index: 10; pointer-events: none; padding: 6px; border-radius: 6px; background: var(--vpd-panel); border: 1px solid var(--vpd-muted); box-shadow: 0 4px 16px rgb(0 0 0 / 25%); font: 11px system-ui, sans-serif; color: var(--vpd-muted); white-space: nowrap; }
-.vpd-preview img { display: block; max-height: 380px; width: auto; }
+.vpd-preview { max-width: calc(100vw - 8px); box-sizing: border-box; position: fixed; z-index: 10; pointer-events: none; padding: 6px; border-radius: 6px; background: var(--vpd-panel); border: 1px solid var(--vpd-muted); box-shadow: 0 4px 16px rgb(0 0 0 / 25%); font: 11px system-ui, sans-serif; color: var(--vpd-muted); white-space: nowrap; }
+.vpd-preview img { display: block; max-height: 380px; max-width: 100%; width: auto; }
 .vpd-node .lib.panels { cursor: help; }
 .vpd-preview .panels { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; max-width: min(80vw, 900px); }
 .vpd-preview figure { position: relative; margin: 0; }
@@ -177,3 +180,21 @@
 .vpd-zoom-label { min-width: 3.5em; text-align: center; color: var(--vpd-muted); }
 .vpd-diag { margin-top: 12px; font-size: 13px; color: var(--vpd-muted); }
 .vpd-diag li { margin: 2px 0; }
+
+/* Phones and tablets: bigger touch targets, and a diagram that fills the screen (see vpdCompact in panzoom.js). */
+@media (pointer: coarse) {
+  .vpd-edge .hit { stroke-width: 22; }
+  .vpd-toolbar button { min-height: 36px; min-width: 36px; }
+  .vpd-toolbar input[type=checkbox] { width: 18px; height: 18px; }
+}
+@media (max-width: 700px), (max-height: 500px) {
+  .vpd-page { padding: 6px 8px; }
+  .vpd-page h1, .vpd-page .vpd-sub { overflow-wrap: anywhere; }
+  .vpd-page .vpd-sub .vpd-long { display: none; }
+  .vpd-toolbar { gap: 6px 10px; margin-bottom: 6px; }
+  .vpd-toolbar .vpd-hint { display: none; }
+  .vpd-scroll { max-height: none; height: calc(100dvh - 56px); }
+}
+@media (min-width: 701px) and (min-height: 501px) {
+  .vpd-page .vpd-sub .vpd-short { display: none; }
+}

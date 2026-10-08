@@ -5,6 +5,10 @@ name: Web app on GitHub Pages
 on:
   push:
     branches: [main]
+    # The site is the web app only: README, docs and screenshots don't change it.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:

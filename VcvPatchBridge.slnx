@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/VcvPatchBridge/VcvPatchBridge.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/VcvPatchBridge.Tests/VcvPatchBridge.Tests.csproj" />
-  </Folder>
-</Solution>

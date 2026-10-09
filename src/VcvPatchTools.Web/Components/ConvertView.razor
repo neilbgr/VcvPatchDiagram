@@ -1,0 +1,84 @@
+﻿@inject IJSRuntime JS
+
+@* Cardinal ↔ VCV Rack, in the browser: the converted patch is downloaded, never uploaded anywhere. *@
+
+<div class="vpd-convert">
+    <p>Detected: <strong>@ConvertedName.Describe(detection.Origin)</strong>.
+        @if (detection.Origin == PatchOrigin.Ambiguous)
+        {
+            <span class="muted">No module tells Rack from Cardinal here: choose the direction.</span>
+        }
+    </p>
+    <div class="vpd-toolbar">
+        <div class="group">Convert to:
+            <label><input type="radio" name="target" checked="@(target == PatchOrigin.Rack)" @onchange="() => target = PatchOrigin.Rack" /> VCV Rack</label>
+            <label><input type="radio" name="target" checked="@(target == PatchOrigin.Cardinal)" @onchange="() => target = PatchOrigin.Cardinal" /> Cardinal</label>
+        </div>
+        <div class="group"><label><input type="checkbox" @bind="remapCableColors" /> map cable colors to the target's palette</label></div>
+        <div class="group">
+            <button disabled="@(target is null)" @onclick="ConvertAsync">Convert and download</button>
+        </div>
+    </div>
+    @if (converted is not null)
+    {
+        <p>Downloaded <strong>@convertedName</strong>.
+            <button class="vpd-link" @onclick="() => OnOpen.InvokeAsync((convertedName!, converted))">Open it here</button>
+        </p>
+        @if (warnings.Count > 0)
+        {
+            <p>Warnings (@warnings.Count):</p>
+            <ul class="vpd-diag">
+                @foreach (string warning in warnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public byte[] Bytes { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string FileName { get; set; } = default!;
+
+    /// <summary>Shows the converted patch in the app (its diagram, its info).</summary>
+    [Parameter] public EventCallback<(string FileName, byte[] Bytes)> OnOpen { get; set; }
+
+    private DetectionResult detection = default!;
+    private PatchOrigin? target;
+    private bool remapCableColors = true;
+    private byte[]? converted;
+    private string? convertedName;
+    private List<string> warnings = new List<string>();
+    private byte[]? shownBytes;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Bytes, shownBytes))
+        {
+            return;
+        }
+        // Another patch: start over.
+        shownBytes = Bytes;
+        detection = PatchDetector.Detect(PatchArchive.Read(Bytes));
+        target = ConvertedName.OppositeOf(detection.Origin);
+        converted = null;
+        warnings = new List<string>();
+    }
+
+    private async Task ConvertAsync()
+    {
+        if (target is not PatchOrigin to)
+        {
+            return;
+        }
+        // A fresh copy each time: the converter edits the patch in place.
+        PatchArchive patch = PatchArchive.Read(Bytes);
+        ConversionResult result = PatchConverter.Convert(patch, to, remapCableColors);
+        converted = patch.Write();
+        convertedName = ConvertedName.For(FileName, to);
+        warnings = result.Warnings;
+        await JS.InvokeVoidAsync("vpdDownloadBytes", convertedName, "application/octet-stream", converted);
+    }
+}

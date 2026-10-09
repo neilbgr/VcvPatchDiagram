@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Explains a patch as a layered block diagram: analysis, layout, SVG/HTML/DOT/Mermaid exports. -->
+  <ItemGroup>
+    <ProjectReference Include="..\VcvPatchTools.Core\VcvPatchTools.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Render\diagram.css" LogicalName="render.diagram.css" />
+    <EmbeddedResource Include="Render\diagram.js" LogicalName="render.diagram.js" />
+    <EmbeddedResource Include="Render\panzoom.js" LogicalName="render.panzoom.js" />
+    <EmbeddedResource Include="Render\library.js" LogicalName="render.library.js" />
+  </ItemGroup>
+
+</Project>

@@ -7,14 +7,17 @@ Keep responses short. Do not add end-of-task summaries unless explicitly request
 ## Project
 C# solution targeting **.NET 10**. All code, comments, console/UI output, commit messages and documentation are in **English**.
 
-- `src/VcvPatchDiagram.Core`: all logic (read .vcv, catalog, analysis, layout, exporters). No file I/O, so it runs in Blazor WASM.
-  Don't use `System.Formats.Tar` there (PlatformNotSupported in the browser): `Patch/TarEntries.cs` exists for that reason.
-- `src/VcvPatchDiagram.Cli`: `vcvdiagram` console app (inspect, render, catalog build).
-- `src/VcvPatchDiagram.Web`: standalone Blazor WebAssembly UI, no server.
+- `src/VcvPatchTools.Core`: reading and writing .vcv files (`Patch/`), module knowledge (`Catalog/`). No file I/O, so it runs in Blazor WASM.
+  Don't use `System.Formats.Tar` in any library (PlatformNotSupported in the browser): `Patch/TarEntries.cs` reads and writes tar for that reason.
+- `src/VcvPatchTools.Diagram`: analysis, layout, exporters. No file I/O.
+- `src/VcvPatchTools.Bridge`: Rack <-> Cardinal conversion. No file I/O.
+- `src/VcvPatchTools.Cli`: `vcvpatch` console app (info, convert, diagram, catalog build), the only project touching files.
+- `src/VcvPatchTools.Web`: standalone Blazor WebAssembly UI (Diagram, Info, Convert tabs), no server.
+- `tests/VcvPatchTools.Tests`: one xUnit project, with folders per library.
 - `catalog/`: `ports.json` is generated (`make catalog`), `ports.overrides.json` and `roles.json` are hand-written.
 
 ## Development workflow
-Use unit tests (xUnit, `tests/VcvPatchDiagram.Tests`) to drive development: write/update a test for new behavior or a bug before or alongside the fix, then run `dotnet test`. Don't consider a change done until the test suite passes.
+Use unit tests (xUnit, `tests/VcvPatchTools.Tests`) to drive development: write/update a test for new behavior or a bug before or alongside the fix, then run `dotnet test`. Don't consider a change done until the test suite passes.
 Exporter output is pinned by golden files in `tests/golden`: after an intended change, `UPDATE_GOLDEN=1 dotnet test`, then review the diff.
 
 Follow `.editorconfig`. Run `dotnet format` before considering a change done (fixes encoding/line-endings/indentation and naming). Note: `dotnet format` does **not** catch the `:silent`-severity rules (no `var` — always use explicit types; prefer expression-bodied members when the body is a single statement) — these must be respected manually when writing code.

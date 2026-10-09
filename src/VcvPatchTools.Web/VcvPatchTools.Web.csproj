@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.12" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VcvPatchTools.Bridge\VcvPatchTools.Bridge.csproj" />
+    <ProjectReference Include="..\VcvPatchTools.Diagram\VcvPatchTools.Diagram.csproj" />
+  </ItemGroup>
+
+  <!-- One pan/zoom and one library preview script for both the static export and the app: copied from Core before each build. -->
+  <Target Name="CopySharedScripts" BeforeTargets="BeforeBuild">
+    <Copy SourceFiles="..\VcvPatchTools.Diagram\Render\panzoom.js;..\VcvPatchTools.Diagram\Render\library.js" DestinationFolder="wwwroot\js" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

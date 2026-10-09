@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>vcvpatch</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VcvPatchTools.Bridge\VcvPatchTools.Bridge.csproj" />
+    <ProjectReference Include="..\VcvPatchTools.Diagram\VcvPatchTools.Diagram.csproj" />
+  </ItemGroup>
+
+</Project>

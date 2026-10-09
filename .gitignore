@@ -68,6 +68,6 @@ publish/
 # Local renders and scratch output
 out/
 
-# Copied from src/VcvPatchDiagram.Core/Render at build time (single source of truth in Core)
-src/VcvPatchDiagram.Web/wwwroot/js/panzoom.js
-src/VcvPatchDiagram.Web/wwwroot/js/library.js
+# Copied from src/VcvPatchTools.Diagram/Render at build time (single source of truth in Diagram)
+src/VcvPatchTools.Web/wwwroot/js/panzoom.js
+src/VcvPatchTools.Web/wwwroot/js/library.js

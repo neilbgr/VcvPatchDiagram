@@ -1,9 +1,9 @@
-CLI     := src/VcvPatchDiagram.Cli
-WEB     := src/VcvPatchDiagram.Web
+CLI     := src/VcvPatchTools.Cli
+WEB     := src/VcvPatchTools.Web
 CONFIG  := Release
 PLUGINS ?= ../Cardinal/plugins
 
-.PHONY: build test format catalog web publish-linux publish-win publish-web publish-all clean
+.PHONY: build test format catalog web publish-linux publish-win publish-osx publish-web publish-all clean
 
 build:
 	dotnet build
@@ -28,6 +28,9 @@ publish-linux:
 
 publish-win:
 	dotnet publish $(CLI) -c $(CONFIG) -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
+
+publish-osx:
+	dotnet publish $(CLI) -c $(CONFIG) -r osx-x64 --self-contained -p:PublishSingleFile=true -o publish/osx-x64
 
 # Static site in publish/web/wwwroot: can be served by any static file server.
 publish-web:

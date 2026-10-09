@@ -1,0 +1,442 @@
+﻿@page "/"
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>@(fileTitle is null ? "VCV Patch Tools" : $"{fileTitle} · VCV Patch Tools")</PageTitle>
+
+<div class="vpd-root" data-theme="@(theme == "auto" ? null : theme)">
+    <div class="vpd-page">
+        <h1>@(fileTitle ?? "VCV Patch Tools")</h1>
+        <p class="vpd-sub">
+            Drop a VCV Rack / Cardinal <code>.vcv</code> patch to see its diagram, what it holds, or convert it between Rack and Cardinal: it is read in your browser, nothing is uploaded.
+            @if (diagram is not null && tab == Tab.Diagram)
+            {
+                <span class="vpd-long"> Start from the overview, click a stacked box to unfold it, click an unfolded lane to fold it back. Click a single cable to write its intent.</span>
+                <span class="vpd-short"> Tap a stacked box to unfold it, a box or a cable for its details; pinch to zoom.</span>
+            }
+        </p>
+
+        <div class="vpd-drop @(diagram is not null ? "compact" : "")">
+            <div>@(diagram is null ? "Choose a patch file" : "Another patch:")</div>
+            @* No accept filter: phones filter by file type, and .vcv has none they know (its files would be greyed out). *@
+            <InputFile OnChange="LoadAsync" />
+            <div><button class="vpd-link" @onclick="@(() => LoadSampleAsync("AmbientJam"))">or try the sample patch</button></div>
+            @if (error is not null)
+            {
+                <p class="vpd-error">@error</p>
+            }
+        </div>
+
+        @if (diagram is not null)
+        {
+            <nav class="vpd-tabs" role="tablist">
+                @foreach (Tab t in Enum.GetValues<Tab>())
+                {
+                    Tab current = t;
+                    <button role="tab" aria-selected="@(tab == current ? "true" : "false")" class="@(tab == current ? "active" : "")" @onclick="() => tab = current">@current</button>
+                }
+            </nav>
+        }
+
+        @if (diagram is not null && tab == Tab.Info)
+        {
+            <PatchInfoView Analysis="analysis!" Archive="archive!" />
+        }
+
+        @if (diagram is not null && tab == Tab.Convert)
+        {
+            <ConvertView Bytes="patchBytes!" FileName="@(fileName!)" OnOpen="OpenConvertedAsync" />
+        }
+
+        @if (diagram is not null && tab == Tab.Info && diagram.Diagnostics.Count > 0)
+        {
+            <ul class="vpd-diag">
+                @foreach (string diagnostic in diagram.Diagnostics)
+                {
+                    <li>@diagnostic</li>
+                }
+            </ul>
+        }
+
+        @if (diagram is not null && tab == Tab.Diagram)
+        {
+            <div class="vpd-toolbar">
+                <div class="group">View:
+                    <button @onclick="FoldAll">Overview</button>
+                    <button @onclick="UnfoldAll">Unfold all</button>
+                    <button class="vpd-options-toggle" aria-expanded="@(optionsOpen ? "true" : "false")" @onclick="() => optionsOpen = !optionsOpen">Options @(optionsOpen ? "▴" : "▾")</button>
+                    <button title="Theme: follow the system, light or dark" @onclick="CycleThemeAsync">@ThemeLabel</button>
+                </div>
+                @* On a phone these groups fold under "Options", leaving the screen to the diagram. *@
+                <div class="vpd-options @(optionsOpen ? "open" : "")">
+                <div class="group">Show:
+                    @for (int step = 1; step <= DiagramLayout.Layers.Count; step++)
+                    {
+                        int s = step;
+                        <button @onclick="() => ShowUpTo(s)">@s · @(s == 1 ? "" : "+ ")@DiagramLayout.LayerLabel(DiagramLayout.Layers[s - 1])</button>
+                    }
+                </div>
+                <div class="group">
+                    @foreach (string layer in DiagramLayout.Layers)
+                    {
+                        string l = layer;
+                        <label>
+                            <input type="checkbox" checked="@(!hiddenLayers.Contains(l))" @onchange="e => ToggleLayer(l, (bool)e.Value!)" />
+                            <span class="swatch" style="--c: var(--vpd-@l)"></span>@DiagramLayout.LayerLabel(l)
+                        </label>
+                    }
+                </div>
+                <div class="group"><label><input type="checkbox" @bind="showIntents" /> intents on every cable</label></div>
+                <div class="group"><label><input type="checkbox" checked="@portTabs" @onchange="e => TogglePortTabs((bool)e.Value!)" /> port names</label></div>
+                <div class="group"><label><input type="checkbox" checked="@functionNames" @onchange="e => ToggleFunctionNames((bool)e.Value!)" /> function names</label></div>
+                <div class="group"><label title="A link to each module's VCV Library page; hover it to see the panel"><input type="checkbox" checked="@libraryLinks" @onchange="e => ToggleLibraryLinks((bool)e.Value!)" /> library links</label></div>
+                @* Only offered when the patch has scopes or displays: otherwise the box would do nothing. *@
+                @if (MonitorCount > 0)
+                {
+                    <div class="group"><label><input type="checkbox" checked="@showMonitors" @onchange="e => ToggleMonitors((bool)e.Value!)" /> scopes &amp; displays (@MonitorCount)</label></div>
+                }
+                <div class="group">Export:
+                    @foreach (DiagramFormat format in Enum.GetValues<DiagramFormat>())
+                    {
+                        DiagramFormat f = format;
+                        <button @onclick="() => ExportAsync(f)">@PatchDiagram.Extension(f)</button>
+                    }
+                </div>
+                </div>
+            </div>
+
+            <PatchDiagramView Layout="diagram" HiddenLayers="hiddenLayers" ShowIntents="showIntents"
+                              SelectedEdge="selected?.Key" OnEdgeSelected="Select"
+                              OnNodeClicked="NodeClicked" OnBandClicked="Fold" PinnedNode="@selectedNode?.Key" />
+
+            @if (selectedNode is not null)
+            {
+                @* What hovering shows on a desktop (tooltips, the panel preview), for a finger: a tap on a module box. *@
+                <div class="vpd-panel">
+                    <button class="close" title="Close" @onclick="() => selectedNode = null">×</button>
+                    <div><strong>@selectedNode.Title</strong> <span class="muted">@selectedNode.Subtitle</span></div>
+                    @if (selectedNode.Tabs.Count > 0)
+                    {
+                        <ul>
+                            @foreach (PortTab tab in selectedNode.Tabs.OrderBy(t => t.Output).ThenBy(t => t.Y))
+                            {
+                                <li><span class="muted">@(tab.Output ? "out" : "in")</span> @tab.Tooltip</li>
+                            }
+                        </ul>
+                    }
+                    <div class="muted">@string.Join(" · ", selectedNode.Details)</div>
+                    @if (selectedNode.LibraryKey is string library)
+                    {
+                        <a class="lib-link" href="@VcvLibrary.PageUrl(library)" target="_blank" rel="noopener">Open in the VCV Library ↗</a>
+                    }
+                </div>
+            }
+
+            @if (selected is not null)
+            {
+                <div class="vpd-panel">
+                    <button class="close" title="Close" @onclick="() => selected = null">×</button>
+                    <div><strong>@selected.FromTitle</strong> <span class="muted">'@selected.FromPort'</span> → <strong>@selected.ToTitle</strong> <span class="muted">'@selected.ToPort'</span> <span class="muted">(@selected.Signal)</span></div>
+                    @if (selected.IsSingleCable)
+                    {
+                        <input type="text" value="@selected.Intent" placeholder="Why is this cable here?" @onchange="e => SetIntentAsync((string?)e.Value)" />
+                        <div class="muted">Saved in this browser for this patch, and included in every export.</div>
+                    }
+                    else
+                    {
+                        <div class="muted">@selected.CableIds.Count cables merged between folded groups: unfold a group to see and annotate each one.</div>
+                    }
+                </div>
+            }
+
+            @if (diagram.Diagnostics.Count > 0)
+            {
+                <ul class="vpd-diag">
+                    @foreach (string diagnostic in diagram.Diagnostics)
+                    {
+                        <li>@diagnostic</li>
+                    }
+                </ul>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private const long MaxPatchBytes = 50 * 1024 * 1024;
+
+    private PatchAnalysis? analysis;
+    private PatchArchive? archive;
+    private byte[]? patchBytes;
+    private string? fileName;
+    private Tab tab = Tab.Diagram;
+
+    private enum Tab
+    {
+        Diagram,
+        Info,
+        Convert,
+    }
+    private DiagramLayout? diagram;
+    private string? fileTitle;
+    private string? error;
+    private DiagramEdge? selected;
+    private bool showIntents;
+    private HashSet<string> hiddenLayers = new HashSet<string>();
+    private Dictionary<long, string> intents = new Dictionary<long, string>();
+    private HashSet<string> unfolded = new HashSet<string>();
+    private bool showMonitors;
+    private bool functionNames;
+    private bool portTabs = true;
+    private bool libraryLinks = true;
+    private bool optionsOpen;
+    private string theme = "auto";
+    private DiagramNode? selectedNode;
+
+    private string StorageKey => $"vpd-intents:{fileTitle}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string? saved = await JS.InvokeAsync<string?>("localStorage.getItem", themeKey);
+            theme = themes.Contains(saved) ? saved! : "auto";
+        }
+        catch (JSException)
+        {
+            theme = "auto";
+        }
+        // ?sample=AmbientJam loads the bundled sample, &tab=info|convert opens that tab.
+        Dictionary<string, string> query = new Uri(Navigation.Uri).Query.TrimStart('?')
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Split('=', 2))
+            .ToDictionary(p => p[0], p => p.Length > 1 ? Uri.UnescapeDataString(p[1]) : "", StringComparer.Ordinal);
+        if (query.TryGetValue("tab", out string? tabName) && Enum.TryParse(tabName, ignoreCase: true, out Tab requested))
+        {
+            tab = requested;
+        }
+        if (query.TryGetValue("sample", out string? sample))
+        {
+            await LoadSampleAsync(sample);
+        }
+    }
+
+    private async Task LoadAsync(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            using MemoryStream buffer = new MemoryStream();
+            await e.File.OpenReadStream(MaxPatchBytes).CopyToAsync(buffer);
+            await ShowAsync(e.File.Name, buffer.ToArray());
+        }
+        catch (IOException ex)
+        {
+            error = $"Could not read {e.File.Name}: {ex.Message}";
+        }
+    }
+
+    private async Task LoadSampleAsync(string name)
+    {
+        try
+        {
+            await ShowAsync(name + ".vcv", await Http.GetByteArrayAsync($"samples/{Uri.EscapeDataString(name)}.vcv.bin"));
+        }
+        catch (HttpRequestException ex)
+        {
+            error = $"Sample {name} not found: {ex.Message}";
+        }
+    }
+
+    private async Task OpenConvertedAsync((string FileName, byte[] Bytes) patch)
+    {
+        await ShowAsync(patch.FileName, patch.Bytes);
+        tab = Tab.Diagram;
+    }
+
+    private async Task ShowAsync(string fileName, byte[] bytes)
+    {
+        error = null;
+        selected = null;
+        try
+        {
+            analysis = PatchDiagram.Analyze(bytes);
+            archive = PatchArchive.Read(bytes);
+            patchBytes = bytes;
+            this.fileName = fileName;
+            fileTitle = Path.GetFileNameWithoutExtension(fileName);
+            intents = await LoadIntentsAsync();
+            unfolded = new HashSet<string>();
+            Relayout();
+        }
+        catch (Exception ex) when (ex is InvalidDataException or JsonException or InvalidOperationException or KeyNotFoundException)
+        {
+            error = $"Could not read {fileName}: {ex.Message}";
+            analysis = null;
+            archive = null;
+            patchBytes = null;
+            diagram = null;
+        }
+    }
+
+    private void Relayout()
+    {
+        diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors, functionNames, portTabs, libraryLinks);
+        // The selected module may have moved, or gone into a folded group.
+        selectedNode = selectedNode is null ? null : diagram?.Nodes.FirstOrDefault(n => n.Key == selectedNode.Key);
+    }
+
+    private int MonitorCount => analysis?.Modules.Count(m => m.Band == Band.Monitor) ?? 0;
+
+    private void ToggleLibraryLinks(bool on)
+    {
+        libraryLinks = on;
+        Relayout();
+    }
+
+    private void TogglePortTabs(bool on)
+    {
+        portTabs = on;
+        Relayout();
+    }
+
+    private void ToggleFunctionNames(bool on)
+    {
+        functionNames = on;
+        Relayout();
+    }
+
+    private void ToggleMonitors(bool show)
+    {
+        showMonitors = show;
+        selected = null;
+        Relayout();
+    }
+
+    /// <summary>A stacked box unfolds; a module box shows (or hides) its details and keeps its cables highlighted.</summary>
+    private void NodeClicked(DiagramNode node)
+    {
+        if (node.IsFolded)
+        {
+            selectedNode = null;
+            Unfold(node);
+            return;
+        }
+        selected = null;
+        selectedNode = selectedNode?.Key == node.Key ? null : node;
+    }
+
+    private void Unfold(DiagramNode node)
+    {
+        if (node.IsFolded && unfolded.Add(node.Group))
+        {
+            selected = null;
+            Relayout();
+        }
+    }
+
+    private void Fold(DiagramBand band)
+    {
+        if (band.Group is not null && unfolded.Remove(band.Group))
+        {
+            selected = null;
+            Relayout();
+        }
+    }
+
+    private void FoldAll()
+    {
+        unfolded = new HashSet<string>();
+        selected = null;
+        Relayout();
+    }
+
+    private void UnfoldAll()
+    {
+        unfolded = analysis is null ? new HashSet<string>() : PatchDiagram.GroupKeys(analysis).ToHashSet();
+        selected = null;
+        Relayout();
+    }
+
+    private void ShowUpTo(int step) => hiddenLayers = DiagramLayout.Layers.Skip(step).ToHashSet();
+
+    private void ToggleLayer(string layer, bool visible)
+    {
+        if (visible)
+        {
+            hiddenLayers.Remove(layer);
+        }
+        else
+        {
+            hiddenLayers.Add(layer);
+        }
+        hiddenLayers = new HashSet<string>(hiddenLayers);
+    }
+
+    private void Select(DiagramEdge edge)
+    {
+        selectedNode = null;
+        selected = selected?.Key == edge.Key ? null : edge;
+    }
+
+    private const string themeKey = "vpd-theme";
+
+    private static readonly string[] themes = { "auto", "light", "dark" };
+
+    private string ThemeLabel => theme switch
+    {
+        "light" => "☀ light",
+        "dark" => "☾ dark",
+        _ => "◐ auto",
+    };
+
+    private async Task CycleThemeAsync()
+    {
+        theme = themes[(Array.IndexOf(themes, theme) + 1) % themes.Length];
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", themeKey, theme);
+        }
+        catch (JSException)
+        {
+            // Storage blocked: the theme lasts for this visit only.
+        }
+    }
+
+    private async Task SetIntentAsync(string? text)
+    {
+        if (selected is null)
+        {
+            return;
+        }
+        intents[selected.CableIds[0]] = text?.Trim() ?? "";
+        Relayout();
+        selected = diagram!.Edges.First(e => e.Key == selected.Key);
+        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, JsonSerializer.Serialize(intents));
+    }
+
+    private async Task<Dictionary<long, string>> LoadIntentsAsync()
+    {
+        try
+        {
+            string? json = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+            return json is null ? new Dictionary<long, string>() : JsonSerializer.Deserialize<Dictionary<long, string>>(json) ?? new Dictionary<long, string>();
+        }
+        catch (Exception ex) when (ex is JSException or JsonException)
+        {
+            // Storage blocked or corrupted: start from the suggestions.
+            return new Dictionary<long, string>();
+        }
+    }
+
+    private async Task ExportAsync(DiagramFormat format)
+    {
+        if (diagram is null)
+        {
+            return;
+        }
+        string content = PatchDiagram.Export(diagram, format);
+        await JS.InvokeVoidAsync("vpdDownload", (fileTitle ?? "patch") + PatchDiagram.Extension(format), PatchDiagram.MimeType(format), content);
+    }
+}

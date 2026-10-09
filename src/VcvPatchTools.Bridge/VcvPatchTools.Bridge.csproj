@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Converts patches between VCV Rack and Cardinal. No file I/O: runs in the browser too. -->
+  <ItemGroup>
+    <ProjectReference Include="..\VcvPatchTools.Core\VcvPatchTools.Core.csproj" />
+  </ItemGroup>
+
+</Project>

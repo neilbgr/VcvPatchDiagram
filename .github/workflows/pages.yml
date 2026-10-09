@@ -1,5 +1,5 @@
 # Publishes the Blazor WebAssembly app to GitHub Pages on every push to main:
-# https://neilbgr.github.io/VcvPatchDiagram/
+# https://neilbgr.github.io/VcvPatchTools/
 name: Web app on GitHub Pages
 
 on:
@@ -35,14 +35,14 @@ jobs:
         run: dotnet test
 
       - name: Publish the web app
-        run: dotnet publish src/VcvPatchDiagram.Web -c Release -o publish/web
+        run: dotnet publish src/VcvPatchTools.Web -c Release -o publish/web
 
-      # Pages serves the site under /VcvPatchDiagram/, not at the root; Blazor's _framework folder must
+      # Pages serves the site under /VcvPatchTools/, not at the root; Blazor's _framework folder must
       # not go through Jekyll; 404.html keeps links with a query string (?sample=…) working.
       - name: Adapt for GitHub Pages
         run: |
           cd publish/web/wwwroot
-          sed -i 's|<base href="/" />|<base href="/VcvPatchDiagram/" />|' index.html
+          sed -i 's|<base href="/" />|<base href="/VcvPatchTools/" />|' index.html
           rm -f index.html.br index.html.gz
           cp index.html 404.html
           touch .nojekyll

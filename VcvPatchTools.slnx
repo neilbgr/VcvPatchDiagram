@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VcvPatchTools.Bridge/VcvPatchTools.Bridge.csproj" />
+    <Project Path="src/VcvPatchTools.Cli/VcvPatchTools.Cli.csproj" />
+    <Project Path="src/VcvPatchTools.Core/VcvPatchTools.Core.csproj" />
+    <Project Path="src/VcvPatchTools.Diagram/VcvPatchTools.Diagram.csproj" />
+    <Project Path="src/VcvPatchTools.Web/VcvPatchTools.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VcvPatchTools.Tests/VcvPatchTools.Tests.csproj" />
+  </Folder>
+</Solution>

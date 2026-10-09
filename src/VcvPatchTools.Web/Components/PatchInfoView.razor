@@ -1,0 +1,53 @@
+﻿@* What the patch file is and holds: format, Rack or Cardinal origin, every module with its role, diagnostics. *@
+
+<div class="vpd-info">
+    <dl>
+        <dt>Format</dt><dd>@(Archive.WasArchive ? "tar+zstd archive" : "raw JSON")@(Archive.ExtraEntries.Count > 0 ? $", with {Archive.ExtraEntries.Count} extra files (module data)" : "")</dd>
+        <dt>Origin</dt><dd>@ConvertedName.Describe(detection.Origin)</dd>
+        <dt>Saved by</dt><dd>Rack @(Analysis.Patch.RackVersion ?? "?")</dd>
+        <dt>Contents</dt><dd>@Analysis.Patch.Modules.Count modules, @Analysis.Patch.Cables.Count cables, @Analysis.Voices.Count voices</dd>
+        @if (detection.CardinalOnlyModules.Count > 0)
+        {
+            <dt>Cardinal only</dt><dd>@string.Join(", ", detection.CardinalOnlyModules.Select(m => m.Model).Distinct())</dd>
+        }
+        @if (detection.RackOnlyModules.Count > 0)
+        {
+            <dt>Rack Core only</dt><dd>@string.Join(", ", detection.RackOnlyModules.Select(m => m.Model).Distinct())</dd>
+        }
+    </dl>
+
+    <table>
+        <thead><tr><th>Module</th><th>Plugin</th><th>Role</th><th>Does</th><th>Band</th></tr></thead>
+        <tbody>
+            @foreach (AnalyzedModule module in Analysis.Modules.OrderBy(m => m.Band).ThenBy(m => m.Title, StringComparer.Ordinal))
+            {
+                <tr class="role-@module.Role.ToString().ToLowerInvariant()">
+                    <td><span class="chip"></span>
+                        @if (VcvLibrary.IsListed(module.Plugin))
+                        {
+                            <a href="@VcvLibrary.PageUrl(VcvLibrary.Key(module.Plugin, module.Module.Model))" target="_blank" rel="noopener" title="Open in the VCV Library">@module.Title</a>
+                        }
+                        else
+                        {
+                            @module.Title
+                        }
+                    </td>
+                    <td>@module.Plugin</td>
+                    <td>@SvgRenderer.RoleLabel(module.Role)</td>
+                    <td>@ModuleFunctions.Label(module.Function)</td>
+                    <td>@module.Band</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PatchAnalysis Analysis { get; set; } = default!;
+
+    [Parameter, EditorRequired] public PatchArchive Archive { get; set; } = default!;
+
+    private DetectionResult detection = default!;
+
+    protected override void OnParametersSet() => detection = PatchDetector.Detect(Archive);
+}

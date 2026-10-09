@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Reads and writes .vcv patches, and knows modules (ports, roles, VCV Library links). No file I/O: runs in the browser too. -->
+  <ItemGroup>
+    <PackageReference Include="ZstdSharp.Port" Version="0.8.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\catalog\ports.json" LogicalName="catalog.ports.json" Condition="Exists('..\..\catalog\ports.json')" />
+    <EmbeddedResource Include="..\..\catalog\ports.overrides.json" LogicalName="catalog.ports.overrides.json" />
+    <EmbeddedResource Include="..\..\catalog\roles.json" LogicalName="catalog.roles.json" />
+  </ItemGroup>
+
+</Project>

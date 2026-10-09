@@ -274,7 +274,14 @@ On a phone or tablet (portrait or landscape), the diagram fills the screen and o
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/web-app-dark.png">
-  <img alt="The web app: drop zone, view, layer, export and zoom controls above the diagram" src="docs/screenshots/web-app-light.png">
+  <img alt="The web app: drop zone, Diagram / Info / Convert tabs, view, layer, export and zoom controls above the diagram" src="docs/screenshots/web-app-light.png">
+</picture>
+
+The **Info** tab tells what the patch is (format, Rack or Cardinal, the Rack version that saved it) and lists every module with its plugin, role and function, linked to its VCV Library page. The **Convert** tab converts it to the other application and downloads the result, or opens it in the app.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/info-dark.png">
+  <img alt="The Info tab: format, origin, Rack version, contents, then a table of every module with its plugin, role, function and band" src="docs/screenshots/info-light.png">
 </picture>
 
 `make publish-web` builds a static site in `publish/web/wwwroot`, which any static file server can host (no backend needed).

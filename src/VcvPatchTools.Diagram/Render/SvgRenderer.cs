@@ -40,9 +40,10 @@ public static class SvgRenderer
         svg.Append("<g class=\"vpd-bands\">");
         foreach (DiagramBand band in layout.Bands)
         {
+            (double bandX, double bandWidth) = layout.Extent(band);
             svg.Append($"<g class=\"{BandClass(band)}\">");
-            svg.Append(Invariant($"<rect x=\"8\" y=\"{band.Y:0.#}\" width=\"{layout.Width - 16:0.#}\" height=\"{band.Height:0.#}\" rx=\"8\"/>"));
-            svg.Append(Invariant($"<text x=\"20\" y=\"{band.Y + 19:0.#}\">{Escape(band.Title)}</text>"));
+            svg.Append(Invariant($"<rect x=\"{bandX:0.#}\" y=\"{band.Y:0.#}\" width=\"{bandWidth:0.#}\" height=\"{band.Height:0.#}\" rx=\"8\"/>"));
+            svg.Append(Invariant($"<text x=\"{bandX + 12:0.#}\" y=\"{band.Y + 19:0.#}\">{Escape(band.Title)}</text>"));
             svg.Append("</g>");
         }
         svg.Append("</g>");
@@ -202,7 +203,7 @@ public static class SvgRenderer
     public static double IntentY(DiagramEdge edge) => edge.LabelY + (edge.IsFeedback ? 13 : -4);
 
     public static string EdgeClass(DiagramEdge edge) =>
-        $"vpd-edge sig-{SignalClass(edge.Signal)} layer-{edge.Layer}{(edge.IsSingleCable ? "" : " merged")}{(edge.IsFeedback ? " feedback" : "")}";
+        $"vpd-edge sig-{SignalClass(edge.Signal)} layer-{edge.Layer}{(edge.IsSingleCable ? "" : " merged")}{(edge.IsFeedback ? " feedback" : "")}{(edge.IsMonitor ? " monitor" : "")}";
 
     public static string NodeClass(DiagramNode node) =>
         $"vpd-node role-{node.Role.ToString().ToLowerInvariant()}{(node.IsInsert ? " insert" : "")}{(node.IsFolded ? " folded" : "")}";
@@ -253,7 +254,8 @@ public static class SvgRenderer
 
     public static string EdgeTooltip(DiagramEdge edge) =>
         $"{edge.FromTitle} '{edge.FromPort}' → {edge.ToTitle} '{edge.ToPort}' ({edge.Signal})\n{edge.Intent}"
-        + (edge.IsFeedback ? "\nFeedback: goes back to a module earlier in the flow (a loop)" : "");
+        + (edge.IsFeedback ? "\nFeedback: goes back to a module earlier in the flow (a loop)" : "")
+        + (edge.IsMonitor ? "\nWatched only: the scope or display makes no sound" : "");
 
     internal static string Escape(string text) => WebUtility.HtmlEncode(text);
 

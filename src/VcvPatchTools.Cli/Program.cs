@@ -2,6 +2,7 @@
 using VcvPatchTools.Core.Patch;
 using VcvPatchTools.Diagram;
 using VcvPatchTools.Diagram.Analysis;
+using VcvPatchTools.Diagram.Layout;
 
 return Run(args);
 
@@ -64,7 +65,10 @@ static int Render(string[] args)
         "all" => PatchDiagram.GroupKeys(analysis),
         _ => unfoldOption.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(),
     };
-    string content = PatchDiagram.Export(PatchDiagram.Layout(analysis, title, unfolded, showMonitors: args.Contains("--scopes"), functionNames: args.Contains("--functions"), portTabs: !args.Contains("--no-ports"), libraryLinks: !args.Contains("--no-links")), format);
+    // --scopes (or --scopes=badge): a badge on what they watch; --scopes=modules: boxes in a column on the right.
+    MonitorView monitors = args.Contains("--scopes=modules") ? MonitorView.Modules
+        : args.Contains("--scopes") || args.Contains("--scopes=badge") ? MonitorView.Badge : MonitorView.Hidden;
+    string content = PatchDiagram.Export(PatchDiagram.Layout(analysis, title, unfolded, monitors: monitors, functionNames: args.Contains("--functions"), portTabs: !args.Contains("--no-ports"), libraryLinks: !args.Contains("--no-links")), format);
     output ??= Path.ChangeExtension(Path.GetFileName(path), PatchDiagram.Extension(format));
     File.WriteAllText(output, content);
     Console.WriteLine($"{format} → {output}");
@@ -110,7 +114,7 @@ static void PrintUsage()
     Console.Error.WriteLine($"  {ConvertCommand.Usage}");
     Console.Error.WriteLine("    (direction from the detected origin unless --to; output next to the input, e.g. Patch.rack.vcv)");
     Console.Error.WriteLine("  vcvpatch diagram <patch.vcv> [-f html|svg|dot|mmd|json] [-o <output file>] [--unfold all|<group,...>]");
-    Console.Error.WriteLine("                   [--scopes] [--functions] [--no-ports] [--no-links]");
+    Console.Error.WriteLine("                   [--scopes[=badge|modules]] [--functions] [--no-ports] [--no-links]");
     Console.Error.WriteLine("    (default: folded overview; group keys are listed by \"info\")");
     Console.Error.WriteLine("  vcvpatch catalog build --src <Cardinal/plugins> [--out catalog/ports.json] [--report catalog/scan-report.txt]");
 }

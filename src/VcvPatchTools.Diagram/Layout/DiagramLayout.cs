@@ -89,10 +89,36 @@ public sealed record DiagramEdge(
 
     /// <summary>Goes back against the flow (cross-modulation, feedback loop): drawn turning back to its target.</summary>
     public bool IsFeedback { get; init; }
+
+    /// <summary>Goes to a scope or a display: it only watches the signal (drawn dashed).</summary>
+    public bool IsMonitor { get; init; }
 }
 
 /// <param name="Group">The unfolded group shown in this lane, or null for a lane of folded groups.</param>
-public sealed record DiagramBand(Band Band, string? Group, string Title, double Y, double Height);
+public sealed record DiagramBand(Band Band, string? Group, string Title, double Y, double Height)
+{
+    /// <summary>Left edge; null for a horizontal band, across the whole diagram.</summary>
+    public double? X { get; init; }
+
+    /// <summary>Width of a band with an <see cref="X"/>; horizontal bands span the whole diagram.</summary>
+    public double? Width { get; init; }
+
+    /// <summary>The column of scopes and displays, on the right of everything else.</summary>
+    public bool IsVertical => X is not null;
+}
+
+/// <summary>How scopes and displays show: they explain nothing about the sound and watch the flow anywhere.</summary>
+public enum MonitorView
+{
+    /// <summary>Not at all.</summary>
+    Hidden,
+
+    /// <summary>As a badge on the box whose signal they watch.</summary>
+    Badge,
+
+    /// <summary>As boxes in a column on the right, each next to what it watches, with dashed cables.</summary>
+    Modules,
+}
 
 /// <summary>Positions of everything in the diagram: the single source of truth for every renderer and exporter.</summary>
 public sealed record DiagramLayout(
@@ -113,5 +139,12 @@ public sealed record DiagramLayout(
 
     /// <summary>Boxes drawn in a band.</summary>
     public IEnumerable<DiagramNode> Members(DiagramBand band) =>
-        Nodes.Where(n => band.Group is not null ? n.Group == band.Group && !n.IsFolded : n.IsFolded && n.Band == band.Band);
+        Nodes.Where(n => band.Group is not null ? n.Group == band.Group && !n.IsFolded
+            : band.IsVertical ? n.Band == band.Band : n.IsFolded && n.Band == band.Band);
+
+    /// <summary>Left edge and width of a band as drawn: horizontal bands span the diagram, with a small margin.</summary>
+    public (double X, double Width) Extent(DiagramBand band) => band.IsVertical ? (band.X!.Value, band.Width!.Value) : (8, HorizontalBandsWidth - 16);
+
+    /// <summary>Width horizontal bands span: up to the column of scopes when there is one.</summary>
+    public double HorizontalBandsWidth => Bands.FirstOrDefault(b => b.IsVertical) is DiagramBand column ? column.X!.Value : Width;
 }

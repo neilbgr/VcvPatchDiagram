@@ -95,7 +95,12 @@
                 @* Only offered when the patch has scopes or displays: otherwise the box would do nothing. *@
                 @if (MonitorCount > 0)
                 {
-                    <div class="group"><label><input type="checkbox" checked="@showMonitors" @onchange="e => ToggleMonitors((bool)e.Value!)" /> scopes &amp; displays (@MonitorCount)</label></div>
+                    <div class="group"><label title="Scopes and displays make no sound: hidden, a 👁 badge on what they watch, or boxes in a column on the right">scopes &amp; displays (@MonitorCount):
+                        <select value="@monitors" @onchange="e => SetMonitors(Enum.Parse<MonitorView>((string)e.Value!))">
+                            <option value="@MonitorView.Hidden">hidden</option>
+                            <option value="@MonitorView.Badge">badge</option>
+                            <option value="@MonitorView.Modules">boxes</option>
+                        </select></label></div>
                 }
                 <div class="group">Export:
                     @foreach (DiagramFormat format in Enum.GetValues<DiagramFormat>())
@@ -187,7 +192,7 @@
     private HashSet<string> hiddenLayers = new HashSet<string>();
     private Dictionary<long, string> intents = new Dictionary<long, string>();
     private HashSet<string> unfolded = new HashSet<string>();
-    private bool showMonitors;
+    private MonitorView monitors;
     private bool functionNames;
     private bool portTabs = true;
     private bool libraryLinks = true;
@@ -282,7 +287,7 @@
 
     private void Relayout()
     {
-        diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, showMonitors, functionNames, portTabs, libraryLinks);
+        diagram = analysis is null ? null : PatchDiagram.Layout(analysis, fileTitle ?? "Patch", unfolded, intents, monitors, functionNames, portTabs, libraryLinks);
         // The selected module may have moved, or gone into a folded group.
         selectedNode = selectedNode is null ? null : diagram?.Nodes.FirstOrDefault(n => n.Key == selectedNode.Key);
     }
@@ -307,9 +312,9 @@
         Relayout();
     }
 
-    private void ToggleMonitors(bool show)
+    private void SetMonitors(MonitorView view)
     {
-        showMonitors = show;
+        monitors = view;
         selected = null;
         Relayout();
     }

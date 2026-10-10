@@ -154,7 +154,7 @@ Click a box (web app) to unfold it into its modules, in a lane of its own. The C
 
 - **Surge XT modulation**: Surge XT modules have "Modulation Signal n" inputs that can be assigned to any knob. The tool reads which knob each input moves and by how much (`Mod 1 → Cutoff +35%`), or reports when an input moves nothing.
 - **MIDI learn**: the cells of MIDI gate and CC modules (Rack's MIDI to Gate / MIDI CC to CV and their CV to MIDI counterparts, Cardinal's Host MIDI Gate / CC) are named by the note or controller they learned in the patch: `Gate 13 · A2`, `Cell 2 · CC 74 (cutoff)`.
-- **Scopes and displays** never get a box (they explain nothing about the sound). With "scopes & displays" on, they show as a 👁 badge on the box they watch.
+- **Scopes and displays** are hidden by default (they explain nothing about the sound). "Scopes & displays" shows them as a 👁 badge on the box they watch, or as boxes in a column on the right, each next to what it watches, with thin dashed cables.
 - **Contextual roles**: controls played live (on-screen pads, joysticks, keyboard zones) belong to performance when played with the mouse or fed by Host MIDI, but become pitch/time/control utilities when another module of the patch drives them; a "visual" module with outputs is a controller.
 
 ### Intents
@@ -264,7 +264,7 @@ make web
 Open http://localhost:5016 and drop a `.vcv` file (or add `?sample=AmbientJam` to the URL for the bundled sample, and `&tab=info` or `&tab=convert` to open that tab). In the **Diagram** tab:
 
 - unfold/fold boxes, or use **Overview** / **Unfold all**;
-- step through the layers, toggle "scopes & displays" (offered when the patch has some);
+- step through the layers, choose how to show scopes and displays (offered when the patch has some);
 - switch port names on the box edges and function names in the titles;
 - drag the background to pan, Ctrl + wheel to zoom;
 - hover a box to follow its cables, click a cable to edit its intent;
@@ -301,6 +301,7 @@ dotnet run --project src/VcvPatchTools.Cli -- <command>
 | `vcvpatch diagram <patch.vcv> -f svg\|dot\|mmd\|json [-o file]` | Other formats |
 | `… --unfold all` or `--unfold voice-1,bus` | Unfold everything, or the given groups (keys listed by `info`) |
 | `… --scopes` | Show scopes and displays as badges |
+| `… --scopes=modules` | Show scopes and displays as boxes in a column on the right |
 | `… --functions` | Title boxes by function (`FILTER #1`) |
 | `… --no-ports` | No port tabs on the box edges |
 | `… --no-links` | No VCV Library links on the module boxes |

@@ -20,6 +20,8 @@ namespace VcvPatchTools.Diagram.Layout;
 /// </list>
 /// Folded groups are one box each, sharing their band's lane; an unfolded group gets its own lane with its
 /// modules (inserts right under their host). Cables between the same two boxes with the same signal merge.
+/// Scopes and displays, when drawn as boxes, sit in one more column on the right, out of the flow: each as close as
+/// it can be to the height of what it watches, its cables running there on tracks like any other.
 /// </summary>
 public static class LayeredLayout
 {
@@ -39,16 +41,16 @@ public static class LayeredLayout
     private const double margin = 24;
 
     /// <param name="unfolded">Keys of the unfolded groups; null or empty shows the overview, everything folded.</param>
-    /// <param name="showMonitors">
-    /// Scopes and displays explain nothing about the sound and can tap the flow anywhere: they never get a box,
-    /// and when asked for they show as a badge on the box whose signal they watch.
+    /// <param name="monitors">
+    /// Scopes and displays explain nothing about the sound and can tap the flow anywhere: hidden by default, they show
+    /// as a badge on the box whose signal they watch, or as boxes in a column on the right.
     /// </param>
     /// <param name="functionNames">Title module boxes by what they do ("FILTER #1"), the module's own name going under it.</param>
     /// <param name="portTabs">Name the ports on the box edges (see <see cref="PortTabs"/>).</param>
     /// <param name="libraryLinks">Link module boxes to their VCV Library page (see <see cref="Core.Catalog.VcvLibrary"/>).</param>
-    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, bool showMonitors = false, bool functionNames = false, bool portTabs = true, bool libraryLinks = true)
+    public static DiagramLayout Build(PatchAnalysis analysis, string title, IReadOnlySet<string>? unfolded, IReadOnlyDictionary<long, string>? intents = null, MonitorView monitors = MonitorView.Hidden, bool functionNames = false, bool portTabs = true, bool libraryLinks = true)
     {
-        IReadOnlyList<PatchGroup> groups = PatchGrouping.Build(analysis).Where(g => g.Band != Band.Monitor).ToList();
+        IReadOnlyList<PatchGroup> groups = PatchGrouping.Build(analysis).Where(g => monitors == MonitorView.Modules || g.Band != Band.Monitor).ToList();
         HashSet<long> visible = groups.SelectMany(g => g.Members).ToHashSet();
         List<AnalyzedCable> cables = analysis.Cables.Where(c => visible.Contains(c.Cable.From.ModuleId) && visible.Contains(c.Cable.To.ModuleId)).ToList();
         bool IsUnfolded(PatchGroup g) => unfolded is not null && unfolded.Contains(g.Key);
@@ -60,10 +62,16 @@ public static class LayeredLayout
         // Visible box of each module: itself if its group is unfolded, the group's box otherwise.
         string BoxOf(long moduleId) => ShowsModules(groupOf[moduleId]) ? ModuleKey(moduleId) : GroupKey(groupOf[moduleId].Key);
 
+        // Boxes in the flow, and the scopes and displays (watchers), out of it.
         List<string> boxes = new List<string>();
+        List<string> watchers = new List<string>();
         foreach (PatchGroup group in groups)
         {
-            if (ShowsModules(group))
+            if (group.Band == Band.Monitor)
+            {
+                watchers.AddRange(ShowsModules(group) ? group.Members.Select(ModuleKey) : new[] { GroupKey(group.Key) });
+            }
+            else if (ShowsModules(group))
             {
                 boxes.AddRange(group.Members.Where(id => analysis.Module(id).InsertOf is null || !group.Members.Contains(analysis.Module(id).InsertOf!.Value)).Select(ModuleKey));
             }
@@ -89,22 +97,31 @@ public static class LayeredLayout
                 anchorOf.TryAdd(key, box);
             }
         }
+        foreach (string watcher in watchers)
+        {
+            stackOf[watcher] = new List<string> { watcher };
+            anchorOf[watcher] = watcher;
+        }
+        HashSet<string> watching = watchers.ToHashSet();
 
         List<IGrouping<EdgeKey, AnalyzedCable>> merged = cables
-            .Where(c => BoxOf(c.Cable.From.ModuleId) != BoxOf(c.Cable.To.ModuleId)
+            .Where(c => BoxOf(c.Cable.From.ModuleId) != BoxOf(c.Cable.To.ModuleId) && !watching.Contains(BoxOf(c.Cable.From.ModuleId))
                 && anchorOf.ContainsKey(BoxOf(c.Cable.From.ModuleId)) && anchorOf.ContainsKey(BoxOf(c.Cable.To.ModuleId)))
             .GroupBy(c => (BoxOf(c.Cable.From.ModuleId), BoxOf(c.Cable.To.ModuleId), c.Signal))
             .ToList();
 
         List<(string From, string To)> links = merged
             .Select(g => (anchorOf[g.Key.From], anchorOf[g.Key.To]))
-            .Where(l => l.Item1 != l.Item2)
+            .Where(l => l.Item1 != l.Item2 && !watching.Contains(l.Item2))
             .Distinct().ToList();
         Dictionary<string, int> column = Depths(boxes, links);
+        int columns = column.Values.DefaultIfEmpty(0).Max() + 1;
+        // The watchers' column comes after the last one.
+        int drawnColumns = columns + (watchers.Count > 0 ? 1 : 0);
 
         // Lanes: per band, one lane for its folded groups and single modules, then one lane per unfolded group.
         List<(Band Band, string? Group, string Title, List<string> Boxes)> lanes = new List<(Band, string?, string, List<string>)>();
-        foreach (Band band in Enum.GetValues<Band>())
+        foreach (Band band in Enum.GetValues<Band>().Where(b => b != Band.Monitor))
         {
             List<PatchGroup> inBand = groups.Where(g => g.Band == band).ToList();
             List<string> folded = inBand.Where(g => !HasOwnLane(g)).Select(g => ShowsModules(g) ? ModuleKey(g.Members[0]) : GroupKey(g.Key)).ToList();
@@ -141,7 +158,7 @@ public static class LayeredLayout
                 continue;
             }
             int first = column[source];
-            int last = column[target];
+            int last = watching.Contains(target) ? columns : column[target];
             bool feedback = last <= first;
             List<int> trackColumns = feedback ? Enumerable.Range(last, first - last + 1).Reverse().ToList() : Enumerable.Range(first + 1, last - first - 1).ToList();
             List<int> gaps = feedback ? Enumerable.Range(last - 1, first - last + 2).Reverse().ToList() : Enumerable.Range(first, last - first).ToList();
@@ -161,7 +178,10 @@ public static class LayeredLayout
             }
             List<string> chain = new List<string> { source };
             chain.AddRange(tracks);
-            chain.Add(target);
+            if (!watching.Contains(target))
+            {
+                chain.Add(target);
+            }
             for (int i = 0; i + 1 < chain.Count; i++)
             {
                 segments.Add((chain[i], chain[i + 1]));
@@ -169,7 +189,6 @@ public static class LayeredLayout
         }
 
         HashSet<string> feedbackTracks = plans.Values.Where(p => p.Feedback).SelectMany(p => p.Tracks).ToHashSet();
-        int columns = column.Values.DefaultIfEmpty(0).Max() + 1;
         List<List<string>> initial = Enumerable.Range(0, columns)
             .Select(col => boxes.Where(b => column[b] == col).Concat(trackColumn.Where(t => t.Value == col).Select(t => t.Key)).ToList())
             .ToList();
@@ -245,6 +264,22 @@ public static class LayeredLayout
             y += height + 8;
         }
 
+        // Watchers, top to bottom by the height of what they watch, each centered on it unless the one above is in the way.
+        double watchersBottom = 0;
+        if (watchers.Count > 0)
+        {
+            double Wanted(string watcher) => merged.Where(g => g.Key.To == watcher).Select(g => Center(g.Key.From)).DefaultIfEmpty(margin).Average();
+            double cursor = margin + bandHeaderHeight;
+            foreach (string watcher in watchers.OrderBy(Wanted))
+            {
+                double top = Math.Max(cursor, Wanted(watcher) - (heightOf[watcher] / 2));
+                positions[watcher] = (columns, top);
+                cursor = top + heightOf[watcher] + rowSpacing;
+            }
+            watchersBottom = Math.Max(y - 8, cursor - rowSpacing + bandPadding);
+            y = Math.Max(y, watchersBottom + 8);
+        }
+
         // Ports: several cables on one side of a box are spread along it, sorted by where the line goes next, so they
         // don't cross at the box. Then the height a cable runs at in each column: out port, tracks, in port.
         double Center(string key) => positions[key].Y + (heightOf[key] / 2);
@@ -307,16 +342,28 @@ public static class LayeredLayout
         {
             int count = Bundles(turns.Where(t => t.Gap == gap), TrunkOf).Count;
             double needed = gapPadding + (count * channelPitch) + OutTabs(gap) + InTabs(gap + 1);
-            return gap < 0 || gap >= columns - 1 ? (count > 0 ? needed : 0) : Math.Max(minGap, needed);
+            return gap < 0 || gap >= drawnColumns - 1 ? (count > 0 ? needed : 0) : Math.Max(minGap, needed);
         }
         List<double> columnX = new List<double> { margin + GapWidth(-1) };
-        for (int gap = 0; gap + 1 < columns; gap++)
+        for (int gap = 0; gap + 1 < drawnColumns; gap++)
         {
             columnX.Add(columnX[gap] + NodeWidth + GapWidth(gap));
         }
         double GapLeft(int gap) => gap < 0 ? margin : columnX[gap] + NodeWidth;
-        double GapRight(int gap) => gap + 1 < columns ? columnX[gap + 1] : GapLeft(gap) + GapWidth(gap);
+        double GapRight(int gap) => gap + 1 < drawnColumns ? columnX[gap + 1] : GapLeft(gap) + GapWidth(gap);
         Dictionary<(EdgeKey Key, int Part), double> channels = AssignChannels(turns, TrunkOf, g => GapLeft(g) + OutTabs(g), g => GapRight(g) - InTabs(g + 1));
+
+        // The watchers' column, clear of their port tabs; the horizontal bands stop short of it.
+        if (watchers.Count > 0)
+        {
+            PatchGroup watchersGroup = groups.First(g => g.Band == Band.Monitor);
+            double left = columnX[columns] - InTabs(columns) - 12;
+            bands.Add(new DiagramBand(Band.Monitor, HasOwnLane(watchersGroup) ? watchersGroup.Key : null, PatchGrouping.BoxTitle(Band.Monitor), margin, watchersBottom - margin)
+            {
+                X = left,
+                Width = columnX[columns] + NodeWidth + 16 - left,
+            });
+        }
 
         List<DiagramNode> nodes = new List<DiagramNode>();
         foreach (PatchGroup group in groups)
@@ -351,7 +398,7 @@ public static class LayeredLayout
                 });
             }
         }
-        if (showMonitors)
+        if (monitors == MonitorView.Badge)
         {
             nodes = nodes.Select(n => n with { Watchers = WatchersOf(analysis, n, visible, groupOf) }).ToList();
         }
@@ -367,7 +414,7 @@ public static class LayeredLayout
         double TabWidth(Dictionary<EdgeKey, PortTab> tabs, EdgeKey key) => tabs.TryGetValue(key, out PortTab? tab) ? tab.Width : 0;
         List<DiagramEdge> edges = DrawEdges(analysis, merged, nodeByKey, plans, levels, outY, inY, channels, intents, runs, k => TabWidth(outTabs, k), k => TabWidth(inTabs, k));
         edges = LabelPlacement.Place(edges, runs, nodes);
-        double width = GapRight(columns - 1) + margin;
+        double width = GapRight(drawnColumns - 1) + margin;
         return new DiagramLayout(title, width, y - 8 + margin, bands, nodes, edges, groups, analysis.Diagnostics);
     }
 
@@ -566,6 +613,7 @@ public static class LayeredLayout
                 TitleOf(from), fromPort, TitleOf(to), toPort, group.Key.Signal, intent, path, labelX, labelY)
             {
                 IsFeedback = feedback,
+                IsMonitor = to.Band == Band.Monitor,
             });
         }
         return edges;

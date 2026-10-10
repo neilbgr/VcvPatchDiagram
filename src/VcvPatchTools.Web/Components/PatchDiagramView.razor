@@ -32,13 +32,14 @@
             <g class="vpd-bands">
                 @foreach (DiagramBand band in Layout.Bands)
                 {
+                    (double bandX, double bandWidth) = Layout.Extent(band);
                     <g class="@SvgRenderer.BandClass(band)" @onclick="() => OnBandClicked.InvokeAsync(band)">
                         @if (band.Group is not null)
                         {
                             <title>Click to fold this group back</title>
                         }
-                        <rect x="8" y="@F(band.Y)" width="@F(Layout.Width - 16)" height="@F(band.Height)" rx="8" />
-                        @Text(20, band.Y + 19, null, band.Group is null ? band.Title : $"{band.Title}  ⊟")
+                        <rect x="@F(bandX)" y="@F(band.Y)" width="@F(bandWidth)" height="@F(band.Height)" rx="8" />
+                        @Text(bandX + 12, band.Y + 19, null, band.Group is null ? band.Title : $"{band.Title}  ⊟")
                     </g>
                 }
             </g>

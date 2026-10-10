@@ -4,6 +4,7 @@ using VcvPatchTools.Core.Patch;
 using VcvPatchTools.Diagram;
 using VcvPatchTools.Diagram.Analysis;
 using VcvPatchTools.Diagram.Layout;
+using VcvPatchTools.Diagram.Render;
 
 namespace VcvPatchTools.Tests;
 
@@ -304,9 +305,53 @@ public class AnalyzerTests
         Assert.Equal(expected, patch.Modules.Single(m => m.Module.Model == "Zones").Band);
         Assert.Equal(Band.Monitor, patch.Modules.Single(m => m.Module.Model == "FullScope").Band);
         Assert.DoesNotContain(PatchDiagram.Layout(patch, "t").Nodes, n => n.Group == "monitor" || n.Watchers.Count > 0);
-        DiagramLayout withScopes = PatchDiagram.Layout(patch, "t", PatchDiagram.GroupKeys(patch), showMonitors: true);
+        DiagramLayout withScopes = PatchDiagram.Layout(patch, "t", PatchDiagram.GroupKeys(patch), monitors: MonitorView.Badge);
         Assert.DoesNotContain(withScopes.Nodes, n => n.Group == "monitor");
         Assert.Equal("Full Scope 'X' ← LVCO 'Signal'", Assert.Single(withScopes.Nodes.Single(n => n.Title == "LVCO").Watchers));
+    }
+
+    [Fact]
+    public void ScopesAsModulesGoInAColumnOnTheRightNextToWhatTheyWatch()
+    {
+        string json = """
+            {
+              "modules": [
+                { "id": 1, "plugin": "Fundamental", "model": "LFO", "pos": [0, 0] },
+                { "id": 2, "plugin": "Fundamental", "model": "VCO", "pos": [10, 0] },
+                { "id": 3, "plugin": "Fundamental", "model": "VCF", "pos": [20, 0] },
+                { "id": 4, "plugin": "Fundamental", "model": "Scope", "pos": [30, 0] },
+                { "id": 5, "plugin": "JW-Modules", "model": "FullScope", "pos": [40, 0] }
+              ],
+              "cables": [
+                { "id": 1, "outputModuleId": 1, "outputId": 0, "inputModuleId": 2, "inputId": 0, "color": "#52ff7d" },
+                { "id": 2, "outputModuleId": 2, "outputId": 0, "inputModuleId": 3, "inputId": 3, "color": "#ff5252" },
+                { "id": 3, "outputModuleId": 1, "outputId": 0, "inputModuleId": 4, "inputId": 0, "color": "#52ff7d" },
+                { "id": 4, "outputModuleId": 3, "outputId": 0, "inputModuleId": 5, "inputId": 0, "color": "#ff5252" }
+              ]
+            }
+            """;
+        PatchAnalysis patch = PatchDiagram.Analyze(Encoding.UTF8.GetBytes(json));
+
+        DiagramLayout layout = PatchDiagram.Layout(patch, "t", PatchDiagram.GroupKeys(patch), monitors: MonitorView.Modules);
+
+        List<DiagramNode> scopes = layout.Nodes.Where(n => n.Band == Band.Monitor).OrderBy(n => n.Y).ToList();
+        Assert.Equal(new[] { "Scope", "Full Scope" }, scopes.Select(n => n.Title));
+        double flowRight = layout.Nodes.Where(n => n.Band != Band.Monitor).Max(n => n.X + n.Width);
+        Assert.All(scopes, n => Assert.True(n.X > flowRight));
+        Assert.True(scopes[1].Y >= scopes[0].Y + scopes[0].Height, "scopes don't overlap");
+        DiagramBand column = Assert.Single(layout.Bands, b => b.IsVertical);
+        Assert.True(column.X > flowRight && column.X + column.Width <= layout.Width);
+        Assert.All(layout.Bands.Where(b => !b.IsVertical), b => Assert.True(layout.Extent(b).X + layout.Extent(b).Width < column.X));
+        Assert.Equal(2, layout.Edges.Count(e => e.IsMonitor));
+        Assert.Contains("monitor", SvgRenderer.EdgeClass(layout.Edges.First(e => e.IsMonitor)));
+        Assert.DoesNotContain(layout.Nodes, n => n.Watchers.Count > 0);
+        Assert.Equal("VCF", layout.Node(layout.Edges.Single(e => e.To == scopes[1].Key).From).Title);
+
+        // The overview folds the two into one box, still in the column.
+        DiagramLayout overview = PatchDiagram.Layout(patch, "t", monitors: MonitorView.Modules);
+        DiagramNode folded = Assert.Single(overview.Nodes, n => n.Band == Band.Monitor);
+        Assert.True(folded.IsFolded);
+        Assert.Equal(folded, Assert.Single(overview.Members(overview.Bands.Single(b => b.IsVertical))));
     }
 
     [Fact]

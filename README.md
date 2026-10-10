@@ -155,6 +155,12 @@ Click a box (web app) to unfold it into its modules, in a lane of its own. The C
 - **Surge XT modulation**: Surge XT modules have "Modulation Signal n" inputs that can be assigned to any knob. The tool reads which knob each input moves and by how much (`Mod 1 → Cutoff +35%`), or reports when an input moves nothing.
 - **MIDI learn**: the cells of MIDI gate and CC modules (Rack's MIDI to Gate / MIDI CC to CV and their CV to MIDI counterparts, Cardinal's Host MIDI Gate / CC) are named by the note or controller they learned in the patch: `Gate 13 · A2`, `Cell 2 · CC 74 (cutoff)`.
 - **Scopes and displays** are hidden by default (they explain nothing about the sound). "Scopes & displays" shows them as a 👁 badge on the box they watch, or as boxes in a column on the right, each next to what it watches, with thin dashed cables.
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/scopes-dark.png">
+    <img alt="Scopes as boxes: a column on the right, the scopes box at the height of what it watches, linked by thin dashed cables" src="docs/screenshots/scopes-light.png">
+  </picture>
+
 - **Contextual roles**: controls played live (on-screen pads, joysticks, keyboard zones) belong to performance when played with the mouse or fed by Host MIDI, but become pitch/time/control utilities when another module of the patch drives them; a "visual" module with outputs is a controller.
 
 ### Intents

@@ -22,4 +22,6 @@ Exporter output is pinned by golden files in `tests/golden`: after an intended c
 
 Follow `.editorconfig`. Run `dotnet format` before considering a change done (fixes encoding/line-endings/indentation and naming). Note: `dotnet format` does **not** catch the `:silent`-severity rules (no `var` — always use explicit types; prefer expression-bodied members when the body is a single statement) — these must be respected manually when writing code.
 
+Before committing and pushing a change, check whether the docs need updating with it: README text, the CLI option table, and the screenshots in `docs/screenshots` (add or redo one when the change is visible).
+
 Never commit or push without an explicit request.
